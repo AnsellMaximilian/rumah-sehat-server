@@ -4,7 +4,6 @@ const express = require("express");
 const cors = require("cors");
 const { sequelize } = require("./models");
 
-const PORT = 1107;
 const app = express();
 
 app.use(cors());
@@ -19,6 +18,6 @@ sequelize
     console.log("Sequelize connection failed");
   });
 
-app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Listening on port ${process.env.PORT}`);
 });
