@@ -18,6 +18,8 @@ sequelize
     console.log("Sequelize connection failed");
   });
 
+app.use("/customers", require("./routes/customers"));
+
 app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${process.env.PORT}`);
 });
