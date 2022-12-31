@@ -1,6 +1,13 @@
 const { Sequelize } = require("sequelize");
 
-const modelDefiners = [require("./customer.model")];
+const modelDefiners = [
+  require("./customer.model"),
+  require("./dr/discountModel.model"),
+  require("./dr/invoice.model"),
+  require("./dr/id/delivery.model"),
+  require("./dr/id/item.model"),
+  require("./dr/id/deliveryDetail.model"),
+];
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -15,6 +22,21 @@ const sequelize = new Sequelize(
 for (const modelDefiner of modelDefiners) {
   modelDefiner(sequelize);
 }
+
+// Setup associations
+const {
+  DrIdDelivery,
+  DrIdItem,
+  Customer,
+  DrDiscountModel,
+  DrIdDeliveryDetail,
+  DrInvoice,
+} = sequelize.models;
+DrIdDelivery.belongsTo(DrDiscountModel);
+DrIdDelivery.belongsTo(Customer);
+DrIdItem.belongsToMany(DrIdDelivery, { through: "DrIdDeliveryDetail" });
+DrIdDelivery.belongsToMany(DrIdItem, { through: "DrIdDeliveryDetail" });
+DrIdDelivery.belongsTo(DrInvoice);
 
 sequelize
   .sync({ alter: true })
