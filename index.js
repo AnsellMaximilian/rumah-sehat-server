@@ -20,6 +20,7 @@ sequelize
   });
 
 app.use("/customers", require("./routes/customers"));
+app.use("/dr", require("./routes/dr"));
 
 app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${process.env.PORT}`);
