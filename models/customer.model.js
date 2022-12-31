@@ -6,6 +6,9 @@ module.exports = (sequelize) => {
     fullName: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        len: 1,
+      },
     },
     phone: {
       type: DataTypes.STRING,
