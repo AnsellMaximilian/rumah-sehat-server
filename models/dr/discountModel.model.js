@@ -9,14 +9,23 @@ module.exports = (sequelize) => {
     subtractor: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      validate: {
+        min: 0,
+      },
     },
     base: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER,
       allowNull: false,
+      validate: {
+        min: 0,
+      },
     },
     percentage: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      validate: {
+        min: 0,
+      },
     },
   });
 };
