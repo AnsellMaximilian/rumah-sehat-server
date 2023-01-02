@@ -10,15 +10,6 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    discount: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    discountModelId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     note: {
       type: DataTypes.TEXT,
       allowNull: true,
