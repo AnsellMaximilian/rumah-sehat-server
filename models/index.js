@@ -34,8 +34,8 @@ const {
 } = sequelize.models;
 DrIdDelivery.belongsTo(DrDiscountModel);
 DrIdDelivery.belongsTo(Customer);
-DrIdItem.belongsToMany(DrIdDelivery, { through: "DrIdDeliveryDetail" });
-DrIdDelivery.belongsToMany(DrIdItem, { through: "DrIdDeliveryDetail" });
+DrIdItem.hasMany(DrIdDeliveryDetail);
+DrIdDelivery.hasMany(DrIdDeliveryDetail);
 DrIdDelivery.belongsTo(DrInvoice);
 
 sequelize
