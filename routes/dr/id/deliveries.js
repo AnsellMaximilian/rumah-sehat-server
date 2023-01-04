@@ -16,24 +16,35 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { date, cost, note, deliveryDetails, CustomerId } = req.body;
-
-    const newDelivery = DrIdDelivery.build({ date, cost, note, CustomerId });
+    const { date, cost, note, deliveryDetails, CustomerId, DrDiscountModelId } =
+      req.body;
+    console.log({
+      date,
+      cost,
+      note,
+      deliveryDetails,
+      CustomerId,
+      DrDiscountModelId,
+    });
+    const newDelivery = DrIdDelivery.build({
+      date,
+      cost,
+      note,
+      CustomerId,
+      DrDiscountModelId,
+    });
     await newDelivery.save();
 
     for (const deliveryDetail of deliveryDetails) {
       const { priceRP, qty, points, DrIdItemId } = deliveryDetail;
+      console.log({ priceRP, qty, points, DrIdItemId });
 
-      try {
-        await newDelivery.createDrIdDeliveryDetail({
-          priceRP,
-          qty,
-          points,
-          DrIdItemId,
-        });
-      } catch (error) {
-        res.json({ error });
-      }
+      await newDelivery.createDrIdDeliveryDetail({
+        priceRP,
+        qty,
+        points,
+        DrIdItemId,
+      });
     }
 
     res.json({ message: "Success", data: newDelivery });
