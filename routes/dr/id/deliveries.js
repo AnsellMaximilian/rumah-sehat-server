@@ -1,13 +1,15 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { DrIdDelivery },
+    models: { DrIdDelivery, DrIdDeliveryDetail },
   },
 } = require("../../../models/index");
 
 router.get("/", async (req, res) => {
   try {
-    const deliveries = await DrIdDelivery.findAll();
+    const deliveries = await DrIdDelivery.findAll({
+      include: DrIdDeliveryDetail,
+    });
     res.json({ data: deliveries });
   } catch (error) {
     res.json({ error });
