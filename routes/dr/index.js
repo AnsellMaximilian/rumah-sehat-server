@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 router.use("/id", require("./id"));
+router.use("/sg", require("./sg"));
 router.use("/discount-models", require("./discountModels"));
 
 module.exports = router;

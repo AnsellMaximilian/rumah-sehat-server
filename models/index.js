@@ -6,6 +6,7 @@ const modelDefiners = [
   require("./dr/invoice.model"),
   require("./dr/id/delivery.model"),
   require("./dr/id/item.model"),
+  require("./dr/sg/item.model"),
   require("./dr/id/deliveryDetail.model"),
 ];
 
