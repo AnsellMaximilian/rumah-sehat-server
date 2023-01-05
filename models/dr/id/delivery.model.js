@@ -47,7 +47,7 @@ module.exports = (sequelize) => {
       get() {
         // presence of relationship or discount indicated by foreign key
         // return this.DrDiscountModel;
-        if (this.DrDiscountModelId) {
+        if (this.DrDiscountModel) {
           return (
             (this.subtotalPoints - this.DrDiscountModel.subtractor) *
             this.DrDiscountModel.base *

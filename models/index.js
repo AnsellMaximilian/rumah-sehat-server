@@ -33,6 +33,7 @@ const {
   DrInvoice,
 } = sequelize.models;
 DrIdDelivery.belongsTo(DrDiscountModel);
+DrDiscountModel.hasMany(DrIdDelivery);
 DrIdDelivery.belongsTo(Customer, {
   foreignKey: {
     allowNull: false,
