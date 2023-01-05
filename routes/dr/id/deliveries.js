@@ -1,7 +1,13 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { DrIdDelivery, DrIdDeliveryDetail, Customer, DrDiscountModel },
+    models: {
+      DrIdDelivery,
+      DrIdDeliveryDetail,
+      Customer,
+      DrDiscountModel,
+      DrIdItem,
+    },
   },
 } = require("../../../models/index");
 
@@ -20,14 +26,6 @@ router.post("/", async (req, res) => {
   try {
     const { date, cost, note, deliveryDetails, CustomerId, DrDiscountModelId } =
       req.body;
-    console.log({
-      date,
-      cost,
-      note,
-      deliveryDetails,
-      CustomerId,
-      DrDiscountModelId,
-    });
     const newDelivery = DrIdDelivery.build({
       date,
       cost,
@@ -58,7 +56,13 @@ router.post("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const delivery = await DrIdDelivery.findByPk(id);
+    const delivery = await DrIdDelivery.findByPk(id, {
+      include: [
+        { model: DrIdDeliveryDetail, include: DrIdItem },
+        { model: Customer },
+        { model: DrDiscountModel },
+      ],
+    });
     if (!delivery) throw `Can't find delivery with id ${id}`;
     res.json({ data: delivery });
   } catch (error) {
