@@ -23,6 +23,12 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    itemName: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.DrIdItem?.name;
+      },
+    },
     totalPriceRP: {
       type: DataTypes.VIRTUAL,
       get() {
