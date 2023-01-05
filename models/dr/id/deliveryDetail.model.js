@@ -23,5 +23,17 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    totalPriceRP: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.priceRP * this.qty;
+      },
+    },
+    totalPoints: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.points * this.qty;
+      },
+    },
   });
 };
