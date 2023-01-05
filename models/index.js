@@ -40,6 +40,7 @@ DrIdDelivery.belongsTo(Customer, {
   },
 });
 DrIdItem.hasMany(DrIdDeliveryDetail);
+DrIdDeliveryDetail.belongsTo(DrIdItem);
 DrIdDelivery.hasMany(DrIdDeliveryDetail);
 DrIdDelivery.belongsTo(DrInvoice);
 
