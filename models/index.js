@@ -5,9 +5,11 @@ const modelDefiners = [
   require("./dr/discountModel.model"),
   require("./dr/invoice.model"),
   require("./dr/id/delivery.model"),
+  require("./dr/sg/delivery.model"),
   require("./dr/id/item.model"),
   require("./dr/sg/item.model"),
   require("./dr/id/deliveryDetail.model"),
+  require("./dr/sg/deliveryDetail.model"),
 ];
 
 const sequelize = new Sequelize(
@@ -27,23 +29,44 @@ for (const modelDefiner of modelDefiners) {
 // Setup associations
 const {
   DrIdDelivery,
+  DrSgDelivery,
   DrIdItem,
+  DrSgItem,
   Customer,
   DrDiscountModel,
   DrIdDeliveryDetail,
+  DrSgDeliveryDetail,
   DrInvoice,
 } = sequelize.models;
+
 DrIdDelivery.belongsTo(DrDiscountModel);
+DrSgDelivery.belongsTo(DrDiscountModel);
+
 DrDiscountModel.hasMany(DrIdDelivery);
+DrDiscountModel.hasMany(DrSgDelivery);
+
 DrIdDelivery.belongsTo(Customer, {
   foreignKey: {
     allowNull: false,
   },
 });
+DrSgDelivery.belongsTo(Customer, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
 DrIdItem.hasMany(DrIdDeliveryDetail);
+DrSgItem.hasMany(DrSgDeliveryDetail);
+
 DrIdDeliveryDetail.belongsTo(DrIdItem);
+DrSgDeliveryDetail.belongsTo(DrSgItem);
+
 DrIdDelivery.hasMany(DrIdDeliveryDetail);
+DrSgDelivery.hasMany(DrSgDeliveryDetail);
+
 DrIdDelivery.belongsTo(DrInvoice);
+DrSgDelivery.belongsTo(DrInvoice);
 
 sequelize
   .sync({ alter: true })
