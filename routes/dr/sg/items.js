@@ -16,9 +16,9 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { name, priceSGD, points } = req.body;
+    const { name, priceSGD, points, deliveryCost } = req.body;
 
-    const newItem = DrSgItem.build({ name, priceSGD, points });
+    const newItem = DrSgItem.build({ name, priceSGD, points, deliveryCost });
     await newItem.save();
 
     res.json({ message: "Success", data: newItem });

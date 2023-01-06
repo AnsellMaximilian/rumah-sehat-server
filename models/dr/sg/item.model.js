@@ -23,5 +23,12 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    deliveryCost: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+    },
   });
 };
