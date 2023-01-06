@@ -40,13 +40,13 @@ router.get("/:id", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   try {
-    const { name, priceSGD, points } = req.body;
+    const { name, priceSGD, points, deliveryCost } = req.body;
     const { id } = req.params;
 
     const item = await DrSgItem.findByPk(id);
 
     await item.update(
-      { name, priceSGD, points },
+      { name, priceSGD, points, deliveryCost },
       {
         where: {
           id: id,
