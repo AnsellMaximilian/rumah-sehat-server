@@ -6,6 +6,14 @@ module.exports = (sequelize) => {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
+    deliveryCostType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "individual",
+      validate: {
+        isIn: [["individual", "whole"]],
+      },
+    },
     cost: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -65,11 +73,13 @@ module.exports = (sequelize) => {
     totalDeliveryCost: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.DrSgDeliveryDetails
-          ? this.DrSgDeliveryDetails.reduce(
-              (total, detail) => total + detail.totalDeliveryCost,
-              0
-            )
+        return this.deliveryCostType === "individual"
+          ? this.DrSgDeliveryDetails
+            ? this.DrSgDeliveryDetails.reduce(
+                (total, detail) => total + detail.totalDeliveryCost,
+                0
+              )
+            : 0
           : 0;
       },
     },

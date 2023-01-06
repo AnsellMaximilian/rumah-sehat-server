@@ -32,6 +32,7 @@ router.post("/", async (req, res) => {
       CustomerId,
       DrDiscountModelId,
       exchangeRate,
+      deliveryCostType,
     } = req.body;
     const newDelivery = DrSgDelivery.build({
       date,
@@ -40,6 +41,7 @@ router.post("/", async (req, res) => {
       CustomerId,
       DrDiscountModelId,
       exchangeRate,
+      deliveryCostType,
     });
     await newDelivery.save();
 

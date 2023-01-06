@@ -18,7 +18,6 @@ module.exports = (sequelize) => {
     },
     deliveryCost: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       validate: {
         min: 0,
       },
@@ -51,7 +50,7 @@ module.exports = (sequelize) => {
     totalDeliveryCost: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.deliveryCost * this.qty;
+        return this.deliveryCost ? this.deliveryCost * this.qty : 0;
       },
     },
   });
