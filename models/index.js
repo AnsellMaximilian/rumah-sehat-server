@@ -57,6 +57,12 @@ DrSgDelivery.belongsTo(Customer, {
   },
 });
 
+DrInvoice.belongsTo(Customer, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
 DrIdItem.hasMany(DrIdDeliveryDetail);
 DrSgItem.hasMany(DrSgDeliveryDetail);
 

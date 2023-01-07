@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
   try {
     const invoices = await DrInvoice.findAll({
       include: [
+        { model: Customer },
         {
           model: DrIdDelivery,
           include: [DrIdDeliveryDetail, Customer, DrDiscountModel],
@@ -37,7 +38,8 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { date, note, DrIdDeliveryIds, DrSgDeliveryIds } = req.body;
+    const { date, note, DrIdDeliveryIds, DrSgDeliveryIds, CustomerId } =
+      req.body;
 
     if (DrIdDeliveryIds.length === 0 && DrSgDeliveryIds.length === 0)
       throw "Pick atleast 1 delivery to invoice.";
@@ -45,6 +47,7 @@ router.post("/", async (req, res) => {
     const newInvoice = DrInvoice.build({
       date,
       note,
+      CustomerId,
     });
     await newInvoice.save();
 
@@ -77,6 +80,9 @@ router.get("/:id", async (req, res) => {
     const { id } = req.params;
     const invoice = await DrInvoice.findByPk(id, {
       include: [
+        {
+          model: Customer,
+        },
         {
           model: DrIdDelivery,
           include: [DrIdDeliveryDetail, Customer, DrDiscountModel],

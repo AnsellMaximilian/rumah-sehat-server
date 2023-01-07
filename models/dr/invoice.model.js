@@ -14,6 +14,12 @@ module.exports = (sequelize) => {
     note: {
       type: DataTypes.TEXT,
     },
+    recipient: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.Customer?.fullName;
+      },
+    },
     totalPriceRP: {
       type: DataTypes.VIRTUAL,
       get() {
