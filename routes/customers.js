@@ -1,7 +1,16 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Customer },
+    models: {
+      Customer,
+      DrIdDelivery,
+      DrSgDelivery,
+      DrIdDeliveryDetail,
+      DrSgDeliveryDetail,
+      DrIdItem,
+      DrSgItem,
+      DrDiscountModel,
+    },
   },
 } = require("../models/index");
 
@@ -70,6 +79,45 @@ router.delete("/:id", async (req, res) => {
       },
     });
     res.json({ data: customer });
+  } catch (error) {
+    res.json({ error });
+  }
+});
+
+// DR SECRET
+router.get("/:id/dr/id/deliveries", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deliveries = await DrIdDelivery.findAll({
+      where: { CustomerId: id },
+
+      include: [
+        { model: DrIdDeliveryDetail, include: DrIdItem },
+        { model: Customer },
+        { model: DrDiscountModel },
+      ],
+    });
+    res.json({ data: deliveries });
+  } catch (error) {
+    res.json({ error });
+  }
+});
+
+router.get("/:id/dr/sg/deliveries", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deliveries = await DrSgDelivery.findAll({
+      where: { CustomerId: id },
+
+      include: [
+        { model: DrSgDeliveryDetail, include: DrSgItem },
+        { model: Customer },
+        { model: DrDiscountModel },
+      ],
+    });
+    res.json({ data: deliveries });
   } catch (error) {
     res.json({ error });
   }
