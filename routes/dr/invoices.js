@@ -72,16 +72,27 @@ router.post("/", async (req, res) => {
   }
 });
 
-// router.get("/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const model = await DrDiscountModel.findByPk(id);
-//     if (!model) throw `Can't find item with id ${id}`;
-//     res.json({ data: model });
-//   } catch (error) {
-//     res.json({ error });
-//   }
-// });
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const invoice = await DrInvoice.findByPk(id, {
+      include: [
+        {
+          model: DrIdDelivery,
+          include: [DrIdDeliveryDetail, Customer, DrDiscountModel],
+        },
+        {
+          model: DrSgDelivery,
+          include: [DrSgDeliveryDetail, Customer, DrDiscountModel],
+        },
+      ],
+    });
+    if (!invoice) throw `Can't find item with id ${id}`;
+    res.json({ data: invoice });
+  } catch (error) {
+    res.json({ error });
+  }
+});
 
 // router.delete("/:id", async (req, res) => {
 //   try {
