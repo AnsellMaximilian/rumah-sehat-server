@@ -14,5 +14,24 @@ module.exports = (sequelize) => {
     note: {
       type: DataTypes.TEXT,
     },
+    totalPriceRP: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return (
+          (this.DrIdDeliveries
+            ? this.DrIdDeliveries.reduce(
+                (total, delivery) => total + delivery.totalPriceRP,
+                0
+              )
+            : 0) +
+          (this.DrSgDeliveries
+            ? this.DrSgDeliveries.reduce(
+                (total, delivery) => total + delivery.totalPriceRP,
+                0
+              )
+            : 0)
+        );
+      },
+    },
   });
 };

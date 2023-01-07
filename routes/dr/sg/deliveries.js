@@ -12,8 +12,16 @@ const {
 } = require("../../../models/index");
 
 router.get("/", async (req, res) => {
+  const { unInvoiced } = req.query;
+
   try {
     const deliveries = await DrSgDelivery.findAll({
+      where:
+        unInvoiced === "true"
+          ? {
+              DrInvoiceId: null,
+            }
+          : {},
       include: [DrSgDeliveryDetail, Customer, DrDiscountModel],
     });
     res.json({ data: deliveries });

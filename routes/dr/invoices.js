@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { Op } = require("sequelize");
 const {
   sequelize: {
     models: {
@@ -9,8 +10,6 @@ const {
       DrSgDeliveryDetail,
       Customer,
       DrDiscountModel,
-      DrIdItem,
-      DrSgItem,
     },
   },
 } = require("../../models/index");
@@ -38,13 +37,34 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { date, note } = req.body;
+    const { date, note, DrIdDeliveryIds, DrSgDeliveryIds } = req.body;
 
-    const newInvoice = DrDiscountModel.build({
+    if (DrIdDeliveryIds.length === 0 && DrSgDeliveryIds.length === 0)
+      throw "Pick atleast 1 delivery to invoice.";
+
+    const newInvoice = DrInvoice.build({
       date,
       note,
     });
     await newInvoice.save();
+
+    const idDeliveries = await DrIdDelivery.findAll({
+      where: {
+        id: DrIdDeliveryIds,
+        DrInvoiceId: null,
+      },
+    });
+
+    await newInvoice.addDrIdDeliveries(idDeliveries);
+
+    const sgDeliveries = await DrSgDelivery.findAll({
+      where: {
+        id: DrSgDeliveryIds,
+        DrInvoiceId: null,
+      },
+    });
+
+    await newInvoice.addDrSgDeliveries(sgDeliveries);
 
     res.json({ message: "Success", data: newInvoice });
   } catch (error) {
