@@ -68,6 +68,9 @@ DrSgDelivery.hasMany(DrSgDeliveryDetail);
 DrIdDelivery.belongsTo(DrInvoice);
 DrSgDelivery.belongsTo(DrInvoice);
 
+DrInvoice.hasMany(DrIdDelivery);
+DrInvoice.hasMany(DrSgDelivery);
+
 sequelize
   .sync({ alter: true })
   .then(() => {
