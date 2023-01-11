@@ -1,20 +1,21 @@
 const router = require("express").Router();
+const { makeError } = require("../../../helpers/errors");
 const {
   sequelize: {
-    models: { DrIdItem },
+    models: { DrIdItem, DrIdDeliveryDetail },
   },
 } = require("../../../models/index");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
     const items = await DrIdItem.findAll();
     res.json({ data: items });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const { name, priceRP, points } = req.body;
 
@@ -23,22 +24,22 @@ router.post("/", async (req, res) => {
 
     res.json({ message: "Success", data: newItem });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const item = await DrIdItem.findByPk(id);
     if (!item) throw `Can't find item with id ${id}`;
     res.json({ data: item });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", async (req, res, next) => {
   try {
     const { name, priceRP, points } = req.body;
     const { id } = req.params;
@@ -56,14 +57,16 @@ router.patch("/:id", async (req, res) => {
 
     res.json({ data: item });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const item = await DrIdItem.findByPk(id);
+    const item = await DrIdItem.findByPk(id, { include: DrIdDeliveryDetail });
+    if (item.DrIdDeliveryDetails.length > 0)
+      throw "Cannot delete. Item has associated delivery details.";
     await item.destroy({
       where: {
         id: id,
@@ -71,7 +74,7 @@ router.delete("/:id", async (req, res) => {
     });
     res.json({ data: item });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 

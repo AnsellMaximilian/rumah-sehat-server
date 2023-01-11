@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { sequelize } = require("./models");
+const { makeError } = require("./helpers/errors");
 
 const app = express();
 
@@ -21,6 +22,12 @@ sequelize
 
 app.use("/customers", require("./routes/customers"));
 app.use("/dr", require("./routes/dr"));
+
+// error handler
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.json(makeError(err));
+});
 
 app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${process.env.PORT}`);

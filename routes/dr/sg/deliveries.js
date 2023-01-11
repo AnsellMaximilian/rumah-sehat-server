@@ -11,7 +11,7 @@ const {
   },
 } = require("../../../models/index");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   const { unInvoiced } = req.query;
 
   try {
@@ -26,11 +26,11 @@ router.get("/", async (req, res) => {
     });
     res.json({ data: deliveries });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const {
       date,
@@ -68,11 +68,11 @@ router.post("/", async (req, res) => {
 
     res.json({ message: "Success", data: newDelivery });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const delivery = await DrSgDelivery.findByPk(id, {
@@ -85,7 +85,26 @@ router.get("/:id", async (req, res) => {
     if (!delivery) throw `Can't find delivery with id ${id}`;
     res.json({ data: delivery });
   } catch (error) {
-    res.json({ error });
+    next(error);
+  }
+});
+
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const delivery = await DrSgDelivery.findByPk(id, {
+      include: DrSgDeliveryDetail,
+    });
+    if (delivery.DrSgDeliveryDetails.length > 0)
+      throw "Can't delete: This delivery is not empty.";
+    await delivery.destroy({
+      where: {
+        id: id,
+      },
+    });
+    res.json({ data: delivery });
+  } catch (error) {
+    next(error);
   }
 });
 

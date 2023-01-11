@@ -1,20 +1,20 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { DrSgItem },
+    models: { DrSgItem, DrSgDeliveryDetail },
   },
 } = require("../../../models/index");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
     const items = await DrSgItem.findAll();
     res.json({ data: items });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const { name, priceSGD, points, deliveryCost } = req.body;
 
@@ -23,22 +23,22 @@ router.post("/", async (req, res) => {
 
     res.json({ message: "Success", data: newItem });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const item = await DrSgItem.findByPk(id);
     if (!item) throw `Can't find item with id ${id}`;
     res.json({ data: item });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", async (req, res, next) => {
   try {
     const { name, priceSGD, points, deliveryCost } = req.body;
     const { id } = req.params;
@@ -56,14 +56,17 @@ router.patch("/:id", async (req, res) => {
 
     res.json({ data: item });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const item = await DrSgItem.findByPk(id);
+    const item = await DrSgItem.findByPk(id, { include: DrSgDeliveryDetail });
+    if (item.DrSgDeliveryDetails.length > 0)
+      throw "Cannot delete. Item has associated delivery details.";
+
     await item.destroy({
       where: {
         id: id,
@@ -71,7 +74,7 @@ router.delete("/:id", async (req, res) => {
     });
     res.json({ data: item });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 

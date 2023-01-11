@@ -11,7 +11,7 @@ const {
   },
 } = require("../../../models/index");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   const { unInvoiced } = req.query;
   try {
     const deliveries = await DrIdDelivery.findAll({
@@ -25,11 +25,11 @@ router.get("/", async (req, res) => {
     });
     res.json({ data: deliveries });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const { date, cost, note, deliveryDetails, CustomerId, DrDiscountModelId } =
       req.body;
@@ -56,11 +56,11 @@ router.post("/", async (req, res) => {
 
     res.json({ message: "Success", data: newDelivery });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const delivery = await DrIdDelivery.findByPk(id, {
@@ -73,11 +73,11 @@ router.get("/:id", async (req, res) => {
     if (!delivery) throw `Can't find delivery with id ${id}`;
     res.json({ data: delivery });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", async (req, res, next) => {
   try {
     const { name, priceRP, points } = req.body;
     const { id } = req.params;
@@ -95,14 +95,18 @@ router.patch("/:id", async (req, res) => {
 
     res.json({ data: delivery });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const delivery = await DrIdDelivery.findByPk(id);
+    const delivery = await DrIdDelivery.findByPk(id, {
+      include: DrIdDeliveryDetail,
+    });
+    if (delivery.DrIdDeliveryDetails.length > 0)
+      throw "Can't delete: This delivery is not empty.";
     await delivery.destroy({
       where: {
         id: id,
@@ -110,7 +114,7 @@ router.delete("/:id", async (req, res) => {
     });
     res.json({ data: delivery });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
