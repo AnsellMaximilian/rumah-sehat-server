@@ -72,6 +72,71 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.patch("/:id", async (req, res, next) => {
+  try {
+    const {
+      date,
+      cost,
+      note,
+      deliveryDetails,
+      CustomerId,
+      DrDiscountModelId,
+      exchangeRate,
+      deliveryCostType,
+    } = req.body;
+
+    const { id } = req.params;
+
+    const delivery = await DrSgDelivery.findByPk(id, {
+      include: [
+        { model: DrSgDeliveryDetail, include: DrSgItem },
+        { model: Customer },
+        { model: DrDiscountModel },
+      ],
+    });
+
+    await delivery.update(
+      {
+        date,
+        cost,
+        note,
+        CustomerId,
+        DrDiscountModelId,
+        exchangeRate,
+        deliveryCostType,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
+
+    await DrSgDeliveryDetail.destroy({
+      where: {
+        DrSgDeliveryId: delivery.id,
+      },
+    });
+
+    for (const deliveryDetail of deliveryDetails) {
+      const { priceSGD, qty, points, DrSgItemId, deliveryCost } =
+        deliveryDetail;
+
+      await delivery.createDrSgDeliveryDetail({
+        priceSGD,
+        qty,
+        points,
+        DrSgItemId,
+        deliveryCost,
+      });
+    }
+
+    res.json({ message: "Success", data: delivery });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
