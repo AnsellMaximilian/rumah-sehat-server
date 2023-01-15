@@ -70,6 +70,13 @@ module.exports = (sequelize) => {
         return 0;
       },
     },
+
+    isDeliveryCostIndividual: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.deliveryCostType === "individual";
+      },
+    },
     totalDeliveryCost: {
       type: DataTypes.VIRTUAL,
       get() {
