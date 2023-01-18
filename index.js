@@ -22,6 +22,7 @@ sequelize
 
 app.use("/customers", require("./routes/customers"));
 app.use("/dr", require("./routes/dr"));
+app.use("/rs", require("./routes/rs"));
 
 // error handler
 app.use(function (err, req, res, next) {
