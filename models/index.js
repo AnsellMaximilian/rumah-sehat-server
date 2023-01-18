@@ -2,6 +2,13 @@ const { Sequelize } = require("sequelize");
 
 const modelDefiners = [
   require("./customer.model"),
+
+  // Rumah Sehat
+  require("./rs/product.model"),
+  require("./rs/supplier.model"),
+  require("./rs/productCategory.model"),
+
+  // DR's Secret
   require("./dr/discountModel.model"),
   require("./dr/invoice.model"),
   require("./dr/id/delivery.model"),
@@ -29,17 +36,30 @@ for (const modelDefiner of modelDefiners) {
 
 // Setup associations
 const {
+  Customer,
+  // Rumah Sehat
+  Supplier,
+  Product,
+  ProductCategory,
+
+  // DR's
   DrIdDelivery,
   DrSgDelivery,
   DrIdItem,
   DrSgItem,
-  Customer,
   DrDiscountModel,
   DrIdDeliveryDetail,
   DrSgDeliveryDetail,
   DrInvoice,
 } = sequelize.models;
 
+// RUMAH SEHAT
+Supplier.hasMany(Product);
+ProductCategory.hasMany(Product);
+Product.belongsTo(Supplier);
+Product.belongsTo(ProductCategory);
+
+// DR's
 DrIdDelivery.belongsTo(DrDiscountModel);
 DrSgDelivery.belongsTo(DrDiscountModel);
 
