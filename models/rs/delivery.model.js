@@ -17,5 +17,28 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    customerFullName: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.Customer?.fullName;
+      },
+    },
+    subtotalPrice: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.DeliveryDetails
+          ? this.DeliveryDetails.reduce(
+              (total, detail) => total + detail.totalPrice,
+              0
+            )
+          : 0;
+      },
+    },
+    totalPrice: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.subtotalPrice + this.cost;
+      },
+    },
   });
 };

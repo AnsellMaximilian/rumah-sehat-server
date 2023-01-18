@@ -9,6 +9,7 @@ const modelDefiners = [
   require("./rs/productCategory.model"),
   require("./rs/deliveryType.model"),
   require("./rs/delivery.model"),
+  require("./rs/deliveryDetail.model"),
 
   // DR's Secret
   require("./dr/discountModel.model"),
@@ -45,6 +46,7 @@ const {
   ProductCategory,
   Delivery,
   DeliveryType,
+  DeliveryDetail,
 
   // DR's
   DrIdDelivery,
@@ -65,6 +67,15 @@ Product.belongsTo(ProductCategory);
 
 Delivery.belongsTo(DeliveryType);
 DeliveryType.hasMany(Delivery);
+
+Delivery.hasMany(DeliveryDetail);
+Product.hasMany(DeliveryDetail);
+DeliveryDetail.belongsTo(Product);
+Delivery.belongsTo(Customer, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
 
 // DR's
 DrIdDelivery.belongsTo(DrDiscountModel);
