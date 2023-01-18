@@ -18,5 +18,13 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    rsMember: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    recieveDrDiscount: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   });
 };
