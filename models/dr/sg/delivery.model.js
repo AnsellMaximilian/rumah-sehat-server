@@ -96,6 +96,13 @@ module.exports = (sequelize) => {
         return this.subtotalPriceSGD * this.exchangeRate;
       },
     },
+    subtotalPriceRPAndDeliveryCost: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.subtotalPriceRP + this.totalDeliveryCost;
+      },
+    },
+
     totalPriceRP: {
       type: DataTypes.VIRTUAL,
       get() {
