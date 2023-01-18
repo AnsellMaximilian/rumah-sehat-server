@@ -62,8 +62,16 @@ const {
 // RUMAH SEHAT
 Supplier.hasMany(Product);
 ProductCategory.hasMany(Product);
-Product.belongsTo(Supplier);
-Product.belongsTo(ProductCategory);
+Product.belongsTo(Supplier, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+Product.belongsTo(ProductCategory, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
 
 Delivery.belongsTo(DeliveryType);
 DeliveryType.hasMany(Delivery);

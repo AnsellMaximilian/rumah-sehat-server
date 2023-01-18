@@ -1,13 +1,15 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Product },
+    models: { Product, ProductCategory, Supplier },
   },
 } = require("../../models/index");
 
 router.get("/", async (req, res, next) => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.findAll({
+      include: [ProductCategory, Supplier],
+    });
     res.json({ data: products });
   } catch (error) {
     next(error);
@@ -16,9 +18,17 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name, price, resellerPrice, cost } = req.body;
+    const { name, price, resellerPrice, cost, SupplierId, ProductCategoryId } =
+      req.body;
 
-    const newProduct = Product.build({ name, price, resellerPrice, cost });
+    const newProduct = Product.build({
+      name,
+      price,
+      resellerPrice,
+      cost,
+      SupplierId,
+      ProductCategoryId,
+    });
     await newProduct.save();
 
     res.json({ message: "Success", data: newProduct });
@@ -40,13 +50,14 @@ router.get("/:id", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { name, price, resellerPrice, cost } = req.body;
+    const { name, price, resellerPrice, cost, SupplierId, ProductCategoryId } =
+      req.body;
     const { id } = req.params;
 
     const product = await Product.findByPk(id);
 
     await product.update(
-      { name, price, resellerPrice, cost },
+      { name, price, resellerPrice, cost, SupplierId, ProductCategoryId },
       {
         where: {
           id: id,
