@@ -16,9 +16,9 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, defaultCost } = req.body;
 
-    const newType = DeliveryType.build({ name });
+    const newType = DeliveryType.build({ name, defaultCost });
     await newType.save();
 
     res.json({ message: "Success", data: newType });
@@ -40,13 +40,13 @@ router.get("/:id", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, defaultCost } = req.body;
     const { id } = req.params;
 
     const type = await DeliveryType.findByPk(id);
 
     await type.update(
-      { name },
+      { name, defaultCost },
       {
         where: {
           id: id,
