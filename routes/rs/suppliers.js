@@ -7,8 +7,19 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const items = await Supplier.findAll();
-    res.json({ data: items });
+    const suppliers = await Supplier.findAll();
+    res.json({ data: suppliers });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/active", async (req, res, next) => {
+  try {
+    const suppliers = await Supplier.findAll({ include: Product });
+    res.json({
+      data: suppliers.filter((supplier) => supplier.Products.length > 0),
+    });
   } catch (error) {
     next(error);
   }
