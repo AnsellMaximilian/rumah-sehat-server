@@ -94,6 +94,12 @@ Delivery.belongsTo(Customer, {
 Purchase.hasMany(PurchaseDetail);
 Product.hasMany(PurchaseDetail);
 PurchaseDetail.belongsTo(Product);
+Supplier.hasMany(Purchase);
+Purchase.belongsTo(Supplier, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
 
 Delivery.belongsTo(Invoice);
 Invoice.hasMany(Delivery);
