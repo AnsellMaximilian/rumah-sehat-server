@@ -8,6 +8,8 @@ const {
       Customer,
       Product,
       DeliveryType,
+      Purchase,
+      PurchaseDetail,
     },
   },
 } = require("../../models/index");
@@ -15,7 +17,10 @@ const {
 router.get("/", async (req, res, next) => {
   try {
     const invoices = await Invoice.findAll({
-      include: [{ model: Delivery, include: DeliveryDetail, Customer }],
+      include: [
+        { model: Delivery, include: DeliveryDetail },
+        { model: Customer },
+      ],
     });
     res.json({ data: invoices });
   } catch (error) {
@@ -23,35 +28,79 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// router.post("/", async (req, res, next) => {
-//   try {
-//     const { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId } =
-//       req.body;
-//     const newDelivery = Delivery.build({
-//       date,
-//       cost,
-//       note,
-//       CustomerId,
-//       DeliveryTypeId,
-//     });
-//     await newDelivery.save();
+router.post("/", async (req, res, next) => {
+  try {
+    const { CustomerId, date, note, deliveries } = req.body;
+    const newInvoice = Invoice.build({
+      date,
+      note,
+      CustomerId,
+    });
+    await newInvoice.save();
 
-//     for (const deliveryDetail of deliveryDetails) {
-//       const { price, qty, ProductId } = deliveryDetail;
-//       console.log({ price, qty, ProductId });
+    for (const deliveryData of deliveries) {
+      const {
+        mode,
+        deliveryData: { date, cost, note, DeliveryTypeId },
+        supplierDeliveryData: {
+          cost: supplierCost,
+          date: supplierDate,
+          SupplierId,
+        },
+        deliveryDetails,
+      } = deliveryData;
 
-//       await newDelivery.createDeliveryDetail({
-//         price,
-//         qty,
-//         ProductId,
-//       });
-//     }
+      const delivery = Delivery.build({
+        date,
+        cost,
+        note,
+        DeliveryTypeId,
+        CustomerId,
+      });
 
-//     res.json({ message: "Success", data: newDelivery });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+      await delivery.save();
+
+      for (const deliveryDetail of deliveryDetails) {
+        const { price, qty, ProductId, makePurchase } = deliveryDetail;
+
+        await delivery.createDeliveryDetail({
+          price,
+          qty,
+          ProductId,
+        });
+      }
+
+      await newInvoice.addDelivery(delivery);
+
+      // Purchases
+
+      if (mode === "supplier") {
+        const newPurchase = Purchase.build({
+          date: supplierDate,
+          cost: supplierCost,
+          SupplierId,
+        });
+
+        await newPurchase.save();
+
+        for (const purchaseDetail of deliveryDetails) {
+          const { cost, qty, ProductId, makePurchase } = purchaseDetail;
+
+          await newPurchase.createPurchaseDetail({
+            price: cost,
+            qty,
+            ProductId,
+          });
+        }
+      }
+    }
+
+    res.json({ message: "Success", data: newInvoice });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 // router.patch("/:id", async (req, res, next) => {
 //   try {
