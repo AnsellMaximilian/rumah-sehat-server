@@ -6,5 +6,6 @@ router.use("/products", require("./products"));
 router.use("/delivery-types", require("./deliveryTypes"));
 router.use("/deliveries", require("./deliveries"));
 router.use("/invoices", require("./invoices"));
+router.use("/purchases", require("./purchases"));
 
 module.exports = router;
