@@ -150,22 +150,25 @@ router.post("/", async (req, res, next) => {
 //   }
 // });
 
-// router.get("/:id", async (req, res, next) => {
-//   try {
-//     const { id } = req.params;
-//     const delivery = await Delivery.findByPk(id, {
-//       include: [
-//         { model: DeliveryDetail, include: Product },
-//         { model: Customer },
-//         { model: DeliveryType },
-//       ],
-//     });
-//     if (!delivery) throw `Can't find delivery with id ${id}`;
-//     res.json({ data: delivery });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+router.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const invoice = await Invoice.findByPk(id, {
+      include: {
+        model: Delivery,
+        include: [
+          { model: DeliveryDetail, include: Product },
+          { model: Customer },
+          { model: DeliveryType },
+        ],
+      },
+    });
+    if (!invoice) throw `Can't find invoice with id ${id}`;
+    res.json({ data: invoice });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // router.delete("/:id", async (req, res, next) => {
 //   try {
