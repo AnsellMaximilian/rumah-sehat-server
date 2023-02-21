@@ -66,8 +66,12 @@ const {
 } = sequelize.models;
 
 // RUMAH SEHAT
-Supplier.hasMany(Product);
-ProductCategory.hasMany(Product);
+Supplier.hasMany(Product, {
+  onDelete: "SET NULL",
+});
+ProductCategory.hasMany(Product, {
+  onDelete: "SET NULL",
+});
 Product.belongsTo(Supplier, {
   foreignKey: {
     allowNull: false,
@@ -80,20 +84,36 @@ Product.belongsTo(ProductCategory, {
 });
 
 Delivery.belongsTo(DeliveryType);
-DeliveryType.hasMany(Delivery);
+DeliveryType.hasMany(Delivery, {
+  onDelete: "SET NULL",
+});
 
-Delivery.hasMany(DeliveryDetail);
-Product.hasMany(DeliveryDetail);
-DeliveryDetail.belongsTo(Product);
+Delivery.hasMany(DeliveryDetail, {
+  onDelete: "CASCADE",
+});
+Product.hasMany(DeliveryDetail, {
+  onDelete: "SET NULL",
+});
+DeliveryDetail.belongsTo(Product, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
 Delivery.belongsTo(Customer, {
   foreignKey: {
     allowNull: false,
   },
 });
 
-Purchase.hasMany(PurchaseDetail);
+Purchase.hasMany(PurchaseDetail, {
+  onDelete: "CASCADE",
+});
 Product.hasMany(PurchaseDetail);
-PurchaseDetail.belongsTo(Product);
+PurchaseDetail.belongsTo(Product, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
 Supplier.hasMany(Purchase);
 Purchase.belongsTo(Supplier, {
   foreignKey: {
@@ -102,7 +122,9 @@ Purchase.belongsTo(Supplier, {
 });
 
 Delivery.belongsTo(Invoice);
-Invoice.hasMany(Delivery);
+Invoice.hasMany(Delivery, {
+  onDelete: "SET NULL",
+});
 Invoice.belongsTo(Customer, {
   foreignKey: {
     allowNull: false,
