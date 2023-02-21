@@ -27,5 +27,14 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+
+    unit: {
+      type: DataTypes.STRING,
+      defaultValue: "Satuan",
+      allowNull: false,
+      validate: {
+        len: 1,
+      },
+    },
   });
 };

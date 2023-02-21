@@ -18,8 +18,15 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name, price, resellerPrice, cost, SupplierId, ProductCategoryId } =
-      req.body;
+    const {
+      name,
+      price,
+      resellerPrice,
+      cost,
+      SupplierId,
+      ProductCategoryId,
+      unit,
+    } = req.body;
 
     const newProduct = Product.build({
       name,
@@ -27,6 +34,7 @@ router.post("/", async (req, res, next) => {
       resellerPrice,
       cost,
       SupplierId,
+      unit,
       ProductCategoryId,
     });
     await newProduct.save();
@@ -50,14 +58,21 @@ router.get("/:id", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { name, price, resellerPrice, cost, SupplierId, ProductCategoryId } =
-      req.body;
+    const {
+      name,
+      price,
+      resellerPrice,
+      cost,
+      SupplierId,
+      ProductCategoryId,
+      unit,
+    } = req.body;
     const { id } = req.params;
 
     const product = await Product.findByPk(id);
 
     await product.update(
-      { name, price, resellerPrice, cost, SupplierId, ProductCategoryId },
+      { name, price, resellerPrice, cost, SupplierId, ProductCategoryId, unit },
       {
         where: {
           id: id,
