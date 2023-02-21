@@ -18,10 +18,7 @@ module.exports = (sequelize) => {
     },
     resellerPrice: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
+      allowNull: true,
     },
     cost: {
       type: DataTypes.INTEGER,
