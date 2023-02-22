@@ -1,4 +1,6 @@
 const router = require("express").Router();
+const path = require("path");
+
 const {
   sequelize: {
     models: {
@@ -13,6 +15,7 @@ const {
     },
   },
 } = require("../../models/index");
+const { createPDFStream } = require("../../helpers/pdfGeneration");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -41,7 +44,7 @@ router.post("/", async (req, res, next) => {
     for (const deliveryData of deliveries) {
       const {
         mode,
-        deliveryData: { date, cost, note, DeliveryTypeId },
+        deliveryData: { date, cost, note, DeliveryTypeId, CustomerId },
         supplierDeliveryData: {
           cost: supplierCost,
           date: supplierDate,
@@ -185,6 +188,54 @@ router.get("/:id", async (req, res, next) => {
 //     });
 //     res.json({ data: delivery });
 //   } catch (error) {
+//     next(error);
+//   }
+// });
+
+// router.get("/:id/print", async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+//     const invoice = await Invoice.findByPk(id, {
+//       include: [
+//         {
+//           model: Customer,
+//         },
+//         {
+//           model: DrIdDelivery,
+//           include: [
+//             { model: DrIdDeliveryDetail, include: DrIdItem },
+//             { model: Customer },
+//             { model: DrDiscountModel },
+//           ],
+//         },
+//         {
+//           model: DrSgDelivery,
+//           include: [
+//             { model: DrSgDeliveryDetail, include: DrSgItem },
+//             { model: Customer },
+//             { model: DrDiscountModel },
+//           ],
+//         },
+//       ],
+//     });
+//     if (!invoice) throw `Can't find item with id ${id}`;
+
+//     const invoiceJSON = invoice.toJSON();
+
+//     const pdfStream = await createPDFStream(
+//       path.join(__dirname, "..", "..", "templates", "dr-secret-invoice.hbs"),
+//       {
+//         invoice: {
+//           ...invoiceJSON,
+//           hasIdDeliveries: invoiceJSON.DrIdDeliveries.length > 0,
+//           hasSgDeliveries: invoiceJSON.DrSgDeliveries.length > 0,
+//         },
+//       }
+//     );
+
+//     pdfStream.pipe(res);
+//   } catch (error) {
+//     console.log(error);
 //     next(error);
 //   }
 // });
