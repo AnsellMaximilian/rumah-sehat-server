@@ -126,53 +126,128 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// router.patch("/:id", async (req, res, next) => {
-//   try {
-//     const { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId } =
-//       req.body;
-//     const { id } = req.params;
+router.patch("/:id", async (req, res, next) => {
+  try {
+    const { CustomerId, date, note, deliveries } = req.body;
 
-//     const delivery = await Delivery.findByPk(id, {
-//       include: [
-//         { model: DeliveryDetail, include: Product },
-//         { model: Customer },
-//         { model: DeliveryType },
-//       ],
-//     });
+    const { id } = req.params;
 
-//     await delivery.update(
-//       { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId },
-//       {
-//         where: {
-//           id: id,
-//         },
-//       }
-//     );
+    const invoice = await Invoice.findByPk(id, {
+      include: [
+        {
+          model: Delivery,
+          include: [
+            { model: DeliveryType },
+            { model: DeliveryDetail, include: Product },
+          ],
+        },
+        { model: Customer },
+      ],
+    });
 
-//     // Delete delivery details
-//     await DeliveryDetail.destroy({
-//       where: {
-//         DeliveryId: delivery.id,
-//       },
-//     });
+    await invoice.update(
+      {
+        date,
+        note,
+        CustomerId,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
 
-//     // replace delivery details
-//     for (const deliveryDetail of deliveryDetails) {
-//       const { price, qty, ProductId } = deliveryDetail;
+    // Delete deliveries
+    await Delivery.destroy({
+      where: {
+        InvoiceId: invoice.id,
+      },
+    });
 
-//       await delivery.createDeliveryDetail({
-//         price,
-//         qty,
-//         ProductId,
-//       });
-//     }
+    // replace deliveries
+    for (const deliveryData of deliveries) {
+      const {
+        mode,
+        edit,
+        deliveryData: { date, cost, note, DeliveryTypeId, CustomerId },
+        supplierDeliveryData: {
+          cost: supplierCost,
+          date: supplierDate,
+          SupplierId,
+        },
+        deliveryDetails,
+      } = deliveryData;
 
-//     res.json({ data: delivery });
-//   } catch (error) {
-//     console.log(error);
-//     next(error);
-//   }
-// });
+      const delivery = Delivery.build({
+        date,
+        cost,
+        note,
+        DeliveryTypeId,
+        CustomerId,
+      });
+
+      await delivery.save();
+
+      for (const deliveryDetail of deliveryDetails) {
+        const { price, qty, ProductId, makePurchase, cost } = deliveryDetail;
+
+        await delivery.createDeliveryDetail({
+          price,
+          qty,
+          ProductId,
+        });
+
+        // Make purchase
+        if (mode === "own") {
+          if (makePurchase && !edit) {
+            const newPurchase = Purchase.build({
+              date,
+              cost: 0,
+              SupplierId: deliveryDetail.product.SupplierId,
+            });
+            await newPurchase.save();
+
+            await newPurchase.createPurchaseDetail({
+              price: cost,
+              qty,
+              ProductId,
+            });
+          }
+        }
+      }
+
+      await invoice.addDelivery(delivery);
+
+      // Purchases
+
+      if (mode === "supplier" && !edit) {
+        const newPurchase = Purchase.build({
+          date: supplierDate,
+          cost: supplierCost,
+          SupplierId,
+        });
+
+        await newPurchase.save();
+
+        for (const purchaseDetail of deliveryDetails) {
+          const { cost, qty, ProductId } = purchaseDetail;
+
+          await newPurchase.createPurchaseDetail({
+            price: cost,
+            qty,
+            ProductId,
+          });
+        }
+      }
+    }
+
+    res.json({ data: invoice });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
 
 router.get("/:id", async (req, res, next) => {
   try {
