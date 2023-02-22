@@ -67,13 +67,31 @@ router.post("/", async (req, res, next) => {
       await delivery.save();
 
       for (const deliveryDetail of deliveryDetails) {
-        const { price, qty, ProductId, makePurchase } = deliveryDetail;
+        const { price, qty, ProductId, makePurchase, cost } = deliveryDetail;
 
         await delivery.createDeliveryDetail({
           price,
           qty,
           ProductId,
         });
+
+        // Make purchase
+        if (mode === "own") {
+          if (makePurchase) {
+            const newPurchase = Purchase.build({
+              date,
+              cost: 0,
+              SupplierId: deliveryDetail.product.SupplierId,
+            });
+            await newPurchase.save();
+
+            await newPurchase.createPurchaseDetail({
+              price: cost,
+              qty,
+              ProductId,
+            });
+          }
+        }
       }
 
       await newInvoice.addDelivery(delivery);
