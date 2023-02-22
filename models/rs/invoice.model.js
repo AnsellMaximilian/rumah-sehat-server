@@ -1,4 +1,5 @@
 const { DataTypes } = require("sequelize");
+const moment = require("moment");
 
 module.exports = (sequelize) => {
   sequelize.define("Invoice", {
@@ -14,6 +15,13 @@ module.exports = (sequelize) => {
       type: DataTypes.VIRTUAL,
       get() {
         return this.Customer?.fullName;
+      },
+    },
+
+    datePretty: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return moment(this.date).format("DD MMM YYYY");
       },
     },
 
