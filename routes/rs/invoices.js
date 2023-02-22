@@ -15,7 +15,10 @@ const {
     },
   },
 } = require("../../models/index");
-const { createPDFStream } = require("../../helpers/pdfGeneration");
+const {
+  createPDFStream,
+  generateHTML,
+} = require("../../helpers/pdfGeneration");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -192,52 +195,52 @@ router.get("/:id", async (req, res, next) => {
 //   }
 // });
 
-// router.get("/:id/print", async (req, res, next) => {
-//   try {
-//     const { id } = req.params;
-//     const invoice = await Invoice.findByPk(id, {
-//       include: [
-//         {
-//           model: Customer,
-//         },
-//         {
-//           model: DrIdDelivery,
-//           include: [
-//             { model: DrIdDeliveryDetail, include: DrIdItem },
-//             { model: Customer },
-//             { model: DrDiscountModel },
-//           ],
-//         },
-//         {
-//           model: DrSgDelivery,
-//           include: [
-//             { model: DrSgDeliveryDetail, include: DrSgItem },
-//             { model: Customer },
-//             { model: DrDiscountModel },
-//           ],
-//         },
-//       ],
-//     });
-//     if (!invoice) throw `Can't find item with id ${id}`;
+router.get("/:id/print", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const invoice = await Invoice.findByPk(id, {
+      include: [
+        {
+          model: Customer,
+        },
+        {
+          model: Delivery,
+          include: [
+            { model: DeliveryDetail, include: Product },
+            { model: Customer },
+            { model: DeliveryType },
+          ],
+        },
+      ],
+    });
+    if (!invoice) throw `Can't find item with id ${id}`;
 
-//     const invoiceJSON = invoice.toJSON();
+    const invoiceJSON = invoice.toJSON();
 
-//     const pdfStream = await createPDFStream(
-//       path.join(__dirname, "..", "..", "templates", "dr-secret-invoice.hbs"),
-//       {
-//         invoice: {
-//           ...invoiceJSON,
-//           hasIdDeliveries: invoiceJSON.DrIdDeliveries.length > 0,
-//           hasSgDeliveries: invoiceJSON.DrSgDeliveries.length > 0,
-//         },
-//       }
-//     );
+    const pdfStream = await createPDFStream(
+      path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
+      {
+        invoice: {
+          ...invoiceJSON,
+        },
+      }
+    );
 
-//     pdfStream.pipe(res);
-//   } catch (error) {
-//     console.log(error);
-//     next(error);
-//   }
-// });
+    pdfStream.pipe(res);
+
+    // const html = generateHTML(
+    //   path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
+    //   {
+    //     invoice: {
+    //       ...invoiceJSON,
+    //     },
+    //   }
+    // );
+    // res.end(html);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
 
 module.exports = router;

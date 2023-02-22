@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>A simple, clean, and responsive HTML invoice template</title>
+    {{> reset}}
+    {{> invoiceStyle}}
+
+  </head>
+
+  <body>
+   <main>
+      <header id="header">
+        <div id="header-top">
+          <div id="header-top-title">
+            <h1>Invoice</h1>
+            <h2>Rumah Sehat</h2>
+          </div>
+          <div id="header-top-number">Invoice #{{invoice.id}}</div>
+        </div>
+        <div id="header-info">
+          <div>
+            <div class="value-display">
+              <div class="label">DATE</div>
+              <div class="value">{{invoice.date}}</div>
+            </div>
+
+            <div class="value-display">
+              <div class="label">INVOICED TO</div>
+              <div class="value">{{invoice.customerFullName}}</div>
+            </div>
+          </div>
+          <div>
+            <div class="value-display">
+              <div class="label">PEMBAYARAN</div>
+              <div class="value">BCA: 035 0889191 (F.M. Fenty Effendy)</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <article class="dr-section">
+        <header class="dr-section__header dr-section__header--right">
+          Indonesia
+        </header>
+        {{#each invoice.Deliveries}}
+        <article class="delivery">
+          <header>
+            <div><span>DELIVERY #</span><span>{{this.id}}</span></div>
+            <div><span>RECIPIENT</span><span>{{this.customerFullName}}</span></div>
+            <div><span>DATE</span><span>{{this.date}}</span></div>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.DeliveryDetails}}
+              <tr>
+                <td>{{this.Product.name}}</td>
+                <td>{{formatRP this.price}}</td>
+                <td>{{this.qty}}</td>
+                <td>{{formatRP this.totalPrice}}</td>
+              </tr>
+              {{/each}}
+              
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row" colspan="3">Subtotal</th>
+                <td>{{formatRP this.subtotalPrice}}</td>
+              </tr>
+              <tr>
+                <th scope="row" colspan="3">Delivery</th>
+                <td colspan="2">{{formatRP this.cost}}</td>
+              </tr>
+              <tr class="table__result">
+                <th scope="row" colspan="3">Total</th>
+                <td colspan="2">{{formatRP this.totalPrice}}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </article>
+        {{/each}}
+      </article>
+
+      <article id="grand-total">
+        <div>AMOUNT DUE</div>
+        <div>{{formatRP invoice.totalPrice}}</div>
+      </article>
+    </main>
+  </body>
+</html>

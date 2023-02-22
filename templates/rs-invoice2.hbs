@@ -1,0 +1,111 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>A simple, clean, and responsive HTML invoice template</title>
+    {{> reset}}
+    {{> invoiceStyle}}
+
+  </head>
+
+  <body>
+   <main>
+      <header id="header">
+        <div id="header-top">
+          <div id="header-top-title">
+            <h1>Invoice</h1>
+            <h2>Rumah Sehat</h2>
+          </div>
+          <div id="header-top-number">Invoice #{{invoice.id}}</div>
+        </div>
+        <div id="header-info">
+          <div>
+            <div class="value-display">
+              <div class="label">DATE</div>
+              <div class="value">{{invoice.date}}</div>
+            </div>
+
+            <div class="value-display">
+              <div class="label">INVOICED TO</div>
+              <div class="value">{{invoice.customerFullName}}</div>
+            </div>
+          </div>
+          <div>
+            <div class="value-display">
+              <div class="label">PEMBAYARAN</div>
+              <div class="value">BCA: 598-034-6333 (F.M. Fenty Effendy)</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <article class="dr-section">
+        <article class="delivery">
+          <table id="rs-table">
+            <thead>
+              <tr>
+                <th>Delivery</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+            {{#each invoice.Deliveries}}
+
+              {{#each this.DeliveryDetails}}
+              <tr class="delivery-detail">
+                {{#if @first}}
+                <td rowspan="{{../this.rowspan}}" class="delivery-column">
+                    <div>
+                        Delivery #{{../this.id}}
+                    </div>
+                    <div>
+                        {{../this.date}}
+                    </div>
+                    <br>
+                    <div>
+                        {{../this.customerFullName}}
+                    </div>
+                    {{#if ../this.note}}
+                    <br>
+                    <div class="note">
+                        Note: {{../this.note}}
+                    </div>
+                    {{/if}}
+                </td>
+                {{/if}}
+                
+                <td>{{this.Product.name}}</td>
+                <td>{{formatRP this.price}}</td>
+                <td>{{this.qty}}</td>
+                <td>{{formatRP this.totalPrice}}</td>
+              </tr>
+              {{/each}}
+              <tr class="delivery-cost">
+                <td colspan="3">{{this.DeliveryType.name}}</td>
+                <td>{{formatRP this.cost}}</td>
+              </tr>
+              <tr class="table__result">
+                <td colspan="4">Total Delivery #{{this.id}}</th>
+                <td colspan="2">{{formatRP this.totalPrice}}</td>
+              </tr>
+
+
+            {{/each}}
+              
+            </tbody>
+            <tfoot>
+              
+            </tfoot>
+          </table>
+        </article>
+      </article>
+
+      <article id="grand-total">
+        <div>AMOUNT DUE</div>
+        <div>{{formatRP invoice.totalPrice}}</div>
+      </article>
+    </main>
+  </body>
+</html>

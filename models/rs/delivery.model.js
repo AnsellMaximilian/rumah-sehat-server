@@ -17,6 +17,12 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    rowspan: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.DeliveryDetails?.length + 1;
+      },
+    },
     customerFullName: {
       type: DataTypes.VIRTUAL,
       get() {
