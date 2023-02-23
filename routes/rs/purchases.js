@@ -1,14 +1,14 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Purchase, PurchaseDetail, Product },
+    models: { Purchase, PurchaseDetail, Product, Supplier },
   },
 } = require("../../models/index");
 
 router.get("/", async (req, res, next) => {
   try {
     const purchases = await Purchase.findAll({
-      include: [PurchaseDetail],
+      include: [PurchaseDetail, Supplier],
     });
     res.json({ data: purchases });
   } catch (error) {
@@ -16,100 +16,95 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// router.post("/", async (req, res, next) => {
-//   try {
-//     const { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId } =
-//       req.body;
-//     const newDelivery = Delivery.build({
-//       date,
-//       cost,
-//       note,
-//       CustomerId,
-//       DeliveryTypeId,
-//     });
-//     await newDelivery.save();
+router.post("/", async (req, res, next) => {
+  try {
+    const { date, cost, note, purchaseDetails, SupplierId } = req.body;
+    const newPurchase = Purchase.build({
+      date,
+      cost,
+      note,
+      SupplierId,
+    });
+    await newPurchase.save();
 
-//     for (const deliveryDetail of deliveryDetails) {
-//       const { price, qty, ProductId } = deliveryDetail;
-//       console.log({ price, qty, ProductId });
+    for (const purchaseDetail of purchaseDetails) {
+      const { price, qty, ProductId } = purchaseDetail;
 
-//       await newDelivery.createDeliveryDetail({
-//         price,
-//         qty,
-//         ProductId,
-//       });
-//     }
+      await newPurchase.createPurchaseDetail({
+        price,
+        qty,
+        ProductId,
+      });
+    }
 
-//     res.json({ message: "Success", data: newDelivery });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+    res.json({ message: "Success", data: newPurchase });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
 
-// router.patch("/:id", async (req, res, next) => {
-//   try {
-//     const { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId } =
-//       req.body;
-//     const { id } = req.params;
+router.patch("/:id", async (req, res, next) => {
+  try {
+    const { date, cost, note, purchaseDetails, SupplierId } = req.body;
+    const { id } = req.params;
 
-//     const delivery = await Delivery.findByPk(id, {
-//       include: [
-//         { model: DeliveryDetail, include: Product },
-//         { model: Customer },
-//         { model: DeliveryType },
-//       ],
-//     });
+    const purchase = await Purchase.findByPk(id, {
+      include: [
+        { model: PurchaseDetail, include: Product },
+        { model: Supplier },
+      ],
+    });
 
-//     await delivery.update(
-//       { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId },
-//       {
-//         where: {
-//           id: id,
-//         },
-//       }
-//     );
+    await purchase.update(
+      { date, cost, note, purchaseDetails, SupplierId },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
 
-//     // Delete delivery details
-//     await DeliveryDetail.destroy({
-//       where: {
-//         DeliveryId: delivery.id,
-//       },
-//     });
+    // Delete delivery details
+    await PurchaseDetail.destroy({
+      where: {
+        PurchaseId: purchase.id,
+      },
+    });
 
-//     // replace delivery details
-//     for (const deliveryDetail of deliveryDetails) {
-//       const { price, qty, ProductId } = deliveryDetail;
+    // replace delivery details
+    for (const purchaseDetail of purchaseDetails) {
+      const { price, qty, ProductId } = purchaseDetail;
 
-//       await delivery.createDeliveryDetail({
-//         price,
-//         qty,
-//         ProductId,
-//       });
-//     }
+      await purchase.createPurchaseDetail({
+        price,
+        qty,
+        ProductId,
+      });
+    }
 
-//     res.json({ data: delivery });
-//   } catch (error) {
-//     console.log(error);
-//     next(error);
-//   }
-// });
+    res.json({ data: purchase });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
 
-// router.get("/:id", async (req, res, next) => {
-//   try {
-//     const { id } = req.params;
-//     const delivery = await Delivery.findByPk(id, {
-//       include: [
-//         { model: DeliveryDetail, include: Product },
-//         { model: Customer },
-//         { model: DeliveryType },
-//       ],
-//     });
-//     if (!delivery) throw `Can't find delivery with id ${id}`;
-//     res.json({ data: delivery });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+router.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const purchase = await Purchase.findByPk(id, {
+      include: [
+        { model: PurchaseDetail, include: Product },
+        { model: Supplier },
+      ],
+    });
+    if (!purchase) throw `Can't find purchase with id ${id}`;
+    res.json({ data: purchase });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // router.delete("/:id", async (req, res, next) => {
 //   try {

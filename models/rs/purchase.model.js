@@ -17,12 +17,12 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
-    // customerFullName: {
-    //   type: DataTypes.VIRTUAL,
-    //   get() {
-    //     return this.Customer?.fullName;
-    //   },
-    // },
+    supplierName: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.Supplier?.name;
+      },
+    },
     subtotalPrice: {
       type: DataTypes.VIRTUAL,
       get() {
