@@ -36,11 +36,12 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { CustomerId, date, note, deliveries } = req.body;
+    const { CustomerId, date, note, deliveries, status } = req.body;
     const newInvoice = Invoice.build({
       date,
       note,
       CustomerId,
+      status,
     });
     await newInvoice.save();
 
@@ -128,7 +129,7 @@ router.post("/", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { CustomerId, date, note, deliveries } = req.body;
+    const { CustomerId, date, note, deliveries, status } = req.body;
 
     const { id } = req.params;
 
@@ -150,6 +151,7 @@ router.patch("/:id", async (req, res, next) => {
         date,
         note,
         CustomerId,
+        status,
       },
       {
         where: {

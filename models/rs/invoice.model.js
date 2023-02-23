@@ -7,6 +7,13 @@ module.exports = (sequelize) => {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: "draft",
+      validate: {
+        isIn: [["draft", "pending", "paid"]],
+      },
+    },
     note: {
       type: DataTypes.TEXT,
       allowNull: true,
