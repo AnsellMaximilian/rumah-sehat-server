@@ -25,9 +25,15 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { fullName, address, phone } = req.body;
+    const { fullName, address, phone, rsMember, receiveDrDiscount } = req.body;
 
-    const newCustomer = Customer.build({ fullName, address, phone });
+    const newCustomer = Customer.build({
+      fullName,
+      address,
+      phone,
+      rsMember,
+      receiveDrDiscount,
+    });
     await newCustomer.save();
 
     res.json({ message: "Success", data: newCustomer });
@@ -49,13 +55,13 @@ router.get("/:id", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   try {
-    const { fullName, address, phone } = req.body;
+    const { fullName, address, phone, rsMember, receiveDrDiscount } = req.body;
     const { id } = req.params;
 
     const customer = await Customer.findByPk(id);
 
     await customer.update(
-      { fullName, address, phone },
+      { fullName, address, phone, rsMember, receiveDrDiscount },
       {
         where: {
           id: id,
