@@ -22,7 +22,7 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    recieveDrDiscount: {
+    receiveDrDiscount: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
