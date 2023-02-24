@@ -255,14 +255,17 @@ router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const invoice = await Invoice.findByPk(id, {
-      include: {
-        model: Delivery,
-        include: [
-          { model: DeliveryDetail, include: Product },
-          { model: Customer },
-          { model: DeliveryType },
-        ],
-      },
+      include: [
+        {
+          model: Delivery,
+          include: [
+            { model: DeliveryDetail, include: Product },
+            { model: Customer },
+            { model: DeliveryType },
+          ],
+        },
+        { model: Customer },
+      ],
     });
     if (!invoice) throw `Can't find invoice with id ${id}`;
     res.json({ data: invoice });
