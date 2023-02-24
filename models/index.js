@@ -2,6 +2,7 @@ const { Sequelize } = require("sequelize");
 
 const modelDefiners = [
   require("./customer.model"),
+  require("./region.model"),
 
   // Rumah Sehat
   require("./rs/product.model"),
@@ -43,6 +44,7 @@ for (const modelDefiner of modelDefiners) {
 // Setup associations
 const {
   Customer,
+  Region,
   // Rumah Sehat
   Supplier,
   Product,
@@ -64,6 +66,9 @@ const {
   DrSgDeliveryDetail,
   DrInvoice,
 } = sequelize.models;
+
+Region.hasMany(Customer);
+Customer.belongsTo(Region);
 
 // RUMAH SEHAT
 Supplier.hasMany(Product, {
