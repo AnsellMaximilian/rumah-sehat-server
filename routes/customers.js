@@ -10,13 +10,14 @@ const {
       DrIdItem,
       DrSgItem,
       DrDiscountModel,
+      Region,
     },
   },
 } = require("../models/index");
 
 router.get("/", async (req, res) => {
   try {
-    const customers = await Customer.findAll();
+    const customers = await Customer.findAll({ include: Region });
     res.json({ data: customers });
   } catch (error) {
     res.json({ error });
