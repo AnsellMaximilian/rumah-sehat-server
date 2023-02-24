@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const { fullName, address, phone, rsMember, receiveDrDiscount } = req.body;
 
@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
 
     res.json({ message: "Success", data: newCustomer });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
