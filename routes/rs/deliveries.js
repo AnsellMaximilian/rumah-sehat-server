@@ -15,7 +15,7 @@ router.get("/", async (req, res, next) => {
               InvoiceId: null,
             }
           : {},
-      include: [DeliveryDetail, Customer],
+      include: [DeliveryDetail, Customer, DeliveryType],
     });
     res.json({ data: deliveries });
   } catch (error) {
