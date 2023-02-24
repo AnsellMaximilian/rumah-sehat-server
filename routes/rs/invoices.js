@@ -271,24 +271,22 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-// router.delete("/:id", async (req, res, next) => {
-//   try {
-//     const { id } = req.params;
-//     const delivery = await Delivery.findByPk(id, {
-//       include: DeliveryDetail,
-//     });
-//     if (delivery.DeliveryDetails.length > 0)
-//       throw "Can't delete: This delivery is not empty.";
-//     await delivery.destroy({
-//       where: {
-//         id: id,
-//       },
-//     });
-//     res.json({ data: delivery });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const invoice = await Invoice.findByPk(id);
+    if (invoice.status !== "draft")
+      throw `Can't delete: This invoice is ${invoice.status}. Make sure invoice status is 'draft'.`;
+    await invoice.destroy({
+      where: {
+        id: id,
+      },
+    });
+    res.json({ data: invoice });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get("/:id/print", async (req, res, next) => {
   try {
