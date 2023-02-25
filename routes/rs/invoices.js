@@ -74,6 +74,7 @@ router.post("/", async (req, res, next) => {
           price,
           qty,
           ProductId,
+          cost,
         });
 
         // Make purchase
@@ -196,6 +197,7 @@ router.patch("/:id", async (req, res, next) => {
 
         await delivery.createDeliveryDetail({
           price,
+          cost,
           qty,
           ProductId,
         });
