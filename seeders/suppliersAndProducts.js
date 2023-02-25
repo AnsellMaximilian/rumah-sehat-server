@@ -1148,8 +1148,8 @@ const suppliers = async () => {
     defaults: {
       name: "Ikan Gabus",
       SupplierId: chichi.id,
-      price: 240000,
-      cost: 210000,
+      price: 235000,
+      cost: 205000,
       ProductCategoryId: categoryMisc.id,
     },
   });
