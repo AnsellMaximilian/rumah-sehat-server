@@ -9,6 +9,7 @@ router.get("/", async (req, res, next) => {
   try {
     const products = await Product.findAll({
       include: [ProductCategory, Supplier],
+      order: [["name", "ASC"]],
     });
     res.json({ data: products });
   } catch (error) {
