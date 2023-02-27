@@ -106,23 +106,19 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-// router.delete("/:id", async (req, res, next) => {
-//   try {
-//     const { id } = req.params;
-//     const delivery = await Delivery.findByPk(id, {
-//       include: DeliveryDetail,
-//     });
-//     if (delivery.DeliveryDetails.length > 0)
-//       throw "Can't delete: This delivery is not empty.";
-//     await delivery.destroy({
-//       where: {
-//         id: id,
-//       },
-//     });
-//     res.json({ data: delivery });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const purchase = await Purchase.findByPk(id);
+    await purchase.destroy({
+      where: {
+        id: id,
+      },
+    });
+    res.json({ data: purchase });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;
