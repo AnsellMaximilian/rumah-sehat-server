@@ -128,7 +128,7 @@ Purchase.belongsTo(Supplier, {
 
 Delivery.belongsTo(Invoice);
 Invoice.hasMany(Delivery, {
-  onDelete: "SET NULL",
+  onDelete: "CASCADE",
 });
 Invoice.belongsTo(Customer, {
   foreignKey: {
