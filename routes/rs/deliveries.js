@@ -124,8 +124,6 @@ router.delete("/:id", async (req, res, next) => {
     const delivery = await Delivery.findByPk(id, {
       include: DeliveryDetail,
     });
-    if (delivery.DeliveryDetails.length > 0)
-      throw "Can't delete: This delivery is not empty.";
     await delivery.destroy({
       where: {
         id: id,
