@@ -9,6 +9,7 @@ const {
       DrSgDeliveryDetail,
       DrIdItem,
       DrSgItem,
+      Invoice,
       DrDiscountModel,
       Region,
     },
@@ -17,7 +18,7 @@ const {
 
 router.get("/", async (req, res) => {
   try {
-    const customers = await Customer.findAll({ include: Region });
+    const customers = await Customer.findAll({ include: [Region, Invoice] });
     res.json({ data: customers });
   } catch (error) {
     res.json({ error });

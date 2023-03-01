@@ -30,5 +30,11 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    activeInvoices: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.Invoices?.filter((invoice) => invoice.status !== "paid");
+      },
+    },
   });
 };
