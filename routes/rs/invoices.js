@@ -172,7 +172,7 @@ router.patch("/:id", async (req, res, next) => {
     for (const deliveryData of deliveries) {
       const {
         mode,
-        edit,
+        editId,
         deliveryData: { date, cost, note, DeliveryTypeId, CustomerId },
         supplierDeliveryData: {
           cost: supplierCost,
@@ -193,7 +193,14 @@ router.patch("/:id", async (req, res, next) => {
       await delivery.save();
 
       for (const deliveryDetail of deliveryDetails) {
-        const { price, qty, ProductId, makePurchase, cost } = deliveryDetail;
+        const {
+          price,
+          qty,
+          ProductId,
+          makePurchase,
+          cost,
+          editId: detailEditId,
+        } = deliveryDetail;
 
         await delivery.createDeliveryDetail({
           price,
@@ -204,7 +211,7 @@ router.patch("/:id", async (req, res, next) => {
 
         // Make purchase
         if (mode === "own") {
-          if (makePurchase && !edit) {
+          if (makePurchase && (!editId || (editId && !detailEditId))) {
             const newPurchase = Purchase.build({
               date,
               cost: 0,
@@ -225,7 +232,7 @@ router.patch("/:id", async (req, res, next) => {
 
       // Purchases
 
-      if (mode === "supplier" && !edit) {
+      if (mode === "supplier" && !editId) {
         const newPurchase = Purchase.build({
           date: supplierDate,
           cost: supplierCost,
