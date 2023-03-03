@@ -113,6 +113,8 @@ Delivery.belongsTo(Customer, {
 Purchase.hasMany(PurchaseDetail, {
   onDelete: "CASCADE",
 });
+
+PurchaseDetail.belongsTo(Purchase);
 Product.hasMany(PurchaseDetail);
 PurchaseDetail.belongsTo(Product, {
   foreignKey: {

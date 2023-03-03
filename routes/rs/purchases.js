@@ -2,8 +2,13 @@ const router = require("express").Router();
 const {
   sequelize: {
     models: { Purchase, PurchaseDetail, Product, Supplier },
+    query,
   },
+  sequelize,
 } = require("../../models/index");
+
+const { Op, QueryTypes } = require("sequelize");
+const moment = require("moment");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -86,6 +91,58 @@ router.patch("/:id", async (req, res, next) => {
     res.json({ data: purchase });
   } catch (error) {
     console.log(error);
+    next(error);
+  }
+});
+
+router.get("/bill", async (req, res, next) => {
+  try {
+    const { startDate, endDate, supplierId } = req.query;
+
+    // const purchases = await Purchase.findAll({
+    //   include: [
+    //     { model: PurchaseDetail, include: [Product] },
+    //     { model: Supplier },
+    //   ],
+    //   where: {
+    //     SupplierId: supplierId,
+    //     date: {
+    //       [Op.gte]: moment(startDate).format("YYYY-MM-DD"),
+    //       [Op.lte]: moment(endDate).format("YYYY-MM-DD"),
+    //     },
+    //   },
+    // });
+    const [details, metadata] = await sequelize.query(
+      `
+      SELECT 
+          "Pr"."name", SUM("PD"."qty") AS "qty", 
+          SUM("PD"."price" * "PD"."qty") AS "total",
+          "PD"."price" AS "productPrice"
+        FROM "Purchases" AS "P" 
+      INNER JOIN "PurchaseDetails" AS "PD" ON "P"."id" = "PD"."PurchaseId" 
+      INNER JOIN "Products" AS "Pr" ON "Pr"."id" = "PD"."ProductId"
+        WHERE "P"."SupplierId"=${supplierId}
+        AND "P"."date" >= '${startDate}'
+        AND "P"."date" <= '${endDate}'
+      GROUP BY "Pr"."name", "productPrice"
+      ORDER BY "Pr"."name"
+      `
+    );
+
+    const [cost, _] = await sequelize.query(
+      `
+      SELECT 
+          SUM("P"."cost") AS "costTotal"
+        from "Purchases" AS "P"
+        WHERE "P"."SupplierId"=${supplierId}
+        AND "P"."date" >= '${startDate}'
+        AND "P"."date" <= '${endDate}'
+
+      `
+    );
+
+    res.json({ data: { cost, details } });
+  } catch (error) {
     next(error);
   }
 });
