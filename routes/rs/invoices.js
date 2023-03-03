@@ -49,11 +49,7 @@ router.post("/", async (req, res, next) => {
       const {
         mode,
         deliveryData: { date, cost, note, DeliveryTypeId, CustomerId },
-        supplierDeliveryData: {
-          cost: supplierCost,
-          date: supplierDate,
-          SupplierId,
-        },
+        supplierDeliveryData: { cost: supplierCost, SupplierId },
         deliveryDetails,
       } = deliveryData;
 
@@ -102,7 +98,7 @@ router.post("/", async (req, res, next) => {
 
       if (mode === "supplier") {
         const newPurchase = Purchase.build({
-          date: supplierDate,
+          date: date,
           cost: supplierCost,
           SupplierId,
         });
@@ -174,11 +170,7 @@ router.patch("/:id", async (req, res, next) => {
         mode,
         editId,
         deliveryData: { date, cost, note, DeliveryTypeId, CustomerId },
-        supplierDeliveryData: {
-          cost: supplierCost,
-          date: supplierDate,
-          SupplierId,
-        },
+        supplierDeliveryData: { cost: supplierCost, SupplierId },
         deliveryDetails,
       } = deliveryData;
 
@@ -234,7 +226,7 @@ router.patch("/:id", async (req, res, next) => {
 
       if (mode === "supplier" && !editId) {
         const newPurchase = Purchase.build({
-          date: supplierDate,
+          date: date,
           cost: supplierCost,
           SupplierId,
         });
