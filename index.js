@@ -27,6 +27,7 @@ app.use("/rs", require("./routes/rs"));
 
 // error handler
 app.use(function (err, req, res, next) {
+  console.log(err);
   res.status(err.status || 500);
   res.json(makeError(err));
 });
