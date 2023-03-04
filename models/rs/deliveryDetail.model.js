@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
       },
     },
     qty: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(7, 3),
       allowNull: false,
       validate: {
         min: 0,
