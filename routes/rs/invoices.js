@@ -101,6 +101,7 @@ router.post("/", async (req, res, next) => {
           date: date,
           cost: supplierCost,
           SupplierId,
+          DeliveryId: delivery,
         });
 
         await newPurchase.save();

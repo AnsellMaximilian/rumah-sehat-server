@@ -110,6 +110,11 @@ Delivery.belongsTo(Customer, {
   },
 });
 
+Purchase.belongsTo(Delivery);
+Delivery.hasOne(Purchase, {
+  onDelete: "SET NULL",
+});
+
 Purchase.hasMany(PurchaseDetail, {
   onDelete: "CASCADE",
 });
