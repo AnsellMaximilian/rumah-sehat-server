@@ -966,8 +966,8 @@ const suppliers = async () => {
     defaults: {
       name: "Kimchi",
       SupplierId: chichi.id,
-      price: 100000,
-      cost: 85000,
+      price: 105000,
+      cost: 90000,
       ProductCategoryId: categoryMisc.id,
     },
   });
@@ -980,8 +980,8 @@ const suppliers = async () => {
     defaults: {
       name: "Minyak Wijen",
       SupplierId: chichi.id,
-      price: 100000,
-      cost: 85000,
+      price: 105000,
+      cost: 90000,
       ProductCategoryId: categoryMisc.id,
     },
   });
@@ -3158,11 +3158,11 @@ const suppliers = async () => {
 
   await Product.findOrCreate({
     where: {
-      name: "Shank/Sengkel ",
+      name: "Shank/Sengkel",
       SupplierId: daging.id,
     },
     defaults: {
-      name: "Shank/Sengkel ",
+      name: "Shank/Sengkel",
       SupplierId: daging.id,
       price: 190000,
       cost: 160000,
@@ -3816,11 +3816,11 @@ const suppliers = async () => {
 
   await Product.findOrCreate({
     where: {
-      name: " Knuckle Satsuma Gyu A 5 ",
+      name: "Knuckle Satsuma Gyu A 5",
       SupplierId: daging.id,
     },
     defaults: {
-      name: " Knuckle Satsuma Gyu A 5 ",
+      name: "Knuckle Satsuma Gyu A 5",
       SupplierId: daging.id,
       price: 2060000,
       cost: 1960000,
@@ -3830,11 +3830,11 @@ const suppliers = async () => {
 
   await Product.findOrCreate({
     where: {
-      name: " Rib Eye Satsuma Gyu A 5 ",
+      name: "Rib Eye Satsuma Gyu A 5",
       SupplierId: daging.id,
     },
     defaults: {
-      name: " Rib Eye Satsuma Gyu A 5 ",
+      name: "Rib Eye Satsuma Gyu A 5",
       SupplierId: daging.id,
       price: 2950000,
       cost: 2800000,
@@ -3844,11 +3844,11 @@ const suppliers = async () => {
 
   await Product.findOrCreate({
     where: {
-      name: " Tenderloin Satsuma Gyu A 5 ",
+      name: "Tenderloin Satsuma Gyu A 5",
       SupplierId: daging.id,
     },
     defaults: {
-      name: " Tenderloin Satsuma Gyu A 5 ",
+      name: "Tenderloin Satsuma Gyu A 5",
       SupplierId: daging.id,
       price: 3830000,
       cost: 3700000,
