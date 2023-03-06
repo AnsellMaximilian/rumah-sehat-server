@@ -101,7 +101,7 @@ router.post("/", async (req, res, next) => {
           date: date,
           cost: supplierCost,
           SupplierId,
-          DeliveryId: delivery,
+          DeliveryId: delivery.id,
         });
 
         await newPurchase.save();
@@ -230,6 +230,7 @@ router.patch("/:id", async (req, res, next) => {
           date: date,
           cost: supplierCost,
           SupplierId,
+          DeliveryId: delivery.id,
         });
 
         await newPurchase.save();

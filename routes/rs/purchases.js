@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Purchase, PurchaseDetail, Product, Supplier },
+    models: { Purchase, PurchaseDetail, Product, Supplier, Delivery },
     query,
   },
   sequelize,
@@ -13,7 +13,7 @@ const moment = require("moment");
 router.get("/", async (req, res, next) => {
   try {
     const purchases = await Purchase.findAll({
-      include: [PurchaseDetail, Supplier],
+      include: [PurchaseDetail, Supplier, Delivery],
     });
     res.json({ data: purchases });
   } catch (error) {
