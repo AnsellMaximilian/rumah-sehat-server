@@ -44,5 +44,13 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    totalDesignatedSales: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.PurchaseDetails
+          ? this.PurchaseDetails.filter((detail) => detail.CustomerId).length
+          : "Unavailable";
+      },
+    },
   });
 };

@@ -33,12 +33,13 @@ router.post("/", async (req, res, next) => {
     await newPurchase.save();
 
     for (const purchaseDetail of purchaseDetails) {
-      const { price, qty, ProductId } = purchaseDetail;
+      const { price, qty, ProductId, CustomerId } = purchaseDetail;
 
       await newPurchase.createPurchaseDetail({
         price,
         qty,
         ProductId,
+        CustomerId,
       });
     }
 
@@ -79,12 +80,13 @@ router.patch("/:id", async (req, res, next) => {
 
     // replace delivery details
     for (const purchaseDetail of purchaseDetails) {
-      const { price, qty, ProductId } = purchaseDetail;
+      const { price, qty, ProductId, CustomerId } = purchaseDetail;
 
       await purchase.createPurchaseDetail({
         price,
         qty,
         ProductId,
+        CustomerId,
       });
     }
 

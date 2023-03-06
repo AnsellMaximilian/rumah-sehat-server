@@ -29,5 +29,17 @@ module.exports = (sequelize) => {
         return this.price * this.qty;
       },
     },
+    designatedRecipient: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.Customer;
+      },
+    },
+    toBeSold: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return !!this.Customer;
+      },
+    },
   });
 };

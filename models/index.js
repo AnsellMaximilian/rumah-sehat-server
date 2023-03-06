@@ -133,6 +133,10 @@ Purchase.belongsTo(Supplier, {
   },
 });
 
+Customer.hasMany(PurchaseDetail);
+
+PurchaseDetail.belongsTo(Customer);
+
 Invoice.hasMany(Delivery, {
   onDelete: "CASCADE",
 });
