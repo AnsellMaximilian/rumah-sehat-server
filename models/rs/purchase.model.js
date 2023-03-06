@@ -40,5 +40,9 @@ module.exports = (sequelize) => {
         return this.subtotalPrice + this.cost;
       },
     },
+    paid: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   });
 };
