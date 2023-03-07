@@ -1,7 +1,14 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Delivery, DeliveryDetail, Customer, Product, DeliveryType },
+    models: {
+      Delivery,
+      DeliveryDetail,
+      Customer,
+      Product,
+      DeliveryType,
+      Invoice,
+    },
   },
 } = require("../../models/index");
 
@@ -15,7 +22,7 @@ router.get("/", async (req, res, next) => {
               InvoiceId: null,
             }
           : {},
-      include: [DeliveryDetail, Customer, DeliveryType],
+      include: [DeliveryDetail, Customer, DeliveryType, Invoice],
     });
     res.json({ data: deliveries });
   } catch (error) {
