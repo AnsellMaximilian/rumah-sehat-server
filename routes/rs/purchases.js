@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Purchase, PurchaseDetail, Product, Supplier, Delivery },
+    models: { Purchase, PurchaseDetail, Product, Supplier, Delivery, Customer },
     query,
   },
   sequelize,
@@ -154,7 +154,7 @@ router.get("/:id", async (req, res, next) => {
     const { id } = req.params;
     const purchase = await Purchase.findByPk(id, {
       include: [
-        { model: PurchaseDetail, include: Product },
+        { model: PurchaseDetail, include: [Product, Customer] },
         { model: Supplier },
       ],
     });
