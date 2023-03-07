@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { Op } = require("sequelize");
 const {
   sequelize: {
     models: {
@@ -12,6 +13,7 @@ const {
       Invoice,
       DrDiscountModel,
       Region,
+      PurchaseDetail,
     },
   },
 } = require("../models/index");
@@ -62,6 +64,32 @@ router.get("/:id", async (req, res) => {
     res.json({ data: customer });
   } catch (error) {
     res.json({ error });
+  }
+});
+
+router.get("/:id/designated-sales", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { exclude } = req.query;
+    const customer = await Customer.findByPk(id, {
+      include: [
+        {
+          model: PurchaseDetail,
+          where: exclude
+            ? {
+                id: {
+                  [Op.notIn]: exclude.split(","),
+                },
+              }
+            : {},
+        },
+      ],
+    });
+    if (customer === null) throw "No more available designated sales.";
+    if (!customer) throw `Can't find item with id ${id}`;
+    res.json({ data: customer.PurchaseDetails });
+  } catch (error) {
+    next(error);
   }
 });
 

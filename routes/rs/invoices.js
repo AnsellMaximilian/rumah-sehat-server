@@ -64,14 +64,33 @@ router.post("/", async (req, res, next) => {
       await delivery.save();
 
       for (const deliveryDetail of deliveryDetails) {
-        const { price, qty, ProductId, makePurchase, cost } = deliveryDetail;
+        const { price, qty, ProductId, makePurchase, cost, designatedSaleId } =
+          deliveryDetail;
 
-        await delivery.createDeliveryDetail({
-          price,
-          qty,
-          ProductId,
-          cost,
-        });
+        let makedetail = true;
+
+        if (designatedSaleId) {
+          const designatedSale = await PurchaseDetail.findByPk(
+            designatedSaleId
+          );
+          if (designatedSale && designatedSale.CustomerId !== null) {
+            await designatedSale.update({
+              CustomerId: null,
+            });
+          } else {
+            // designatedSale id is sent but it doesn't exist, or it does but no longer has a designated recipient
+            makedetail = false;
+          }
+        }
+
+        if (makedetail) {
+          await delivery.createDeliveryDetail({
+            price,
+            qty,
+            ProductId,
+            cost,
+          });
+        }
 
         // Make purchase
         if (mode === "own") {
@@ -193,14 +212,33 @@ router.patch("/:id", async (req, res, next) => {
           makePurchase,
           cost,
           editId: detailEditId,
+          designatedSaleId,
         } = deliveryDetail;
 
-        await delivery.createDeliveryDetail({
-          price,
-          cost,
-          qty,
-          ProductId,
-        });
+        let makedetail = true;
+
+        if (designatedSaleId) {
+          const designatedSale = await PurchaseDetail.findByPk(
+            designatedSaleId
+          );
+          if (designatedSale && designatedSale.CustomerId !== null) {
+            await designatedSale.update({
+              CustomerId: null,
+            });
+          } else {
+            // designatedSale id is sent but it doesn't exist, or it does but no longer has a designated recipient
+            makedetail = false;
+          }
+        }
+
+        if (makedetail) {
+          await delivery.createDeliveryDetail({
+            price,
+            cost,
+            qty,
+            ProductId,
+          });
+        }
 
         // Make purchase
         if (mode === "own") {
