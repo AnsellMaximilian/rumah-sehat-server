@@ -101,19 +101,6 @@ router.get("/bill", async (req, res, next) => {
   try {
     const { startDate, endDate, supplierId } = req.query;
 
-    // const purchases = await Purchase.findAll({
-    //   include: [
-    //     { model: PurchaseDetail, include: [Product] },
-    //     { model: Supplier },
-    //   ],
-    //   where: {
-    //     SupplierId: supplierId,
-    //     date: {
-    //       [Op.gte]: moment(startDate).format("YYYY-MM-DD"),
-    //       [Op.lte]: moment(endDate).format("YYYY-MM-DD"),
-    //     },
-    //   },
-    // });
     const [details, metadata] = await sequelize.query(
       `
       SELECT 
@@ -144,6 +131,72 @@ router.get("/bill", async (req, res, next) => {
     );
 
     res.json({ data: { cost, details } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/weekly-invoices", async (req, res, next) => {
+  try {
+    const currentDate = moment();
+    const startDate = currentDate
+      .clone()
+      .startOf("week")
+      .add(1, "day")
+      .format("yyyy-MM-DD");
+    const endDate = currentDate
+      .clone()
+      .endOf("week")
+      .add(1, "day")
+      .format("yyyy-MM-DD");
+
+    const startTest = "2023-02-13";
+    const endTest = "2023-02-19";
+
+    const [purchaseTotals] = await sequelize.query(
+      `
+      SELECT 
+          "S"."id" AS "supplierId",
+          "S".name AS "supplierName",
+          SUM("PD"."price" * "PD"."qty") AS "total"
+        FROM "Purchases" AS "P" 
+      INNER JOIN "PurchaseDetails" AS "PD" ON "P"."id" = "PD"."PurchaseId" 
+      INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
+        AND "P"."date" >= '${startTest}'
+        AND "P"."date" <= '${endTest}'
+      GROUP BY "S"."name", "supplierId"
+      ORDER BY "S"."name"
+      `
+    );
+
+    const [costTotals] = await sequelize.query(
+      `
+      SELECT 
+          "S"."id" AS "supplierId",
+          "S".name AS "supplierName",
+          SUM("P"."cost") AS "costTotal"
+        FROM "Purchases" AS "P" 
+      INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
+        AND "P"."date" >= '${startTest}'
+        AND "P"."date" <= '${endTest}'
+      GROUP BY "S"."name", "supplierId"
+      ORDER BY "S"."name"
+      `
+    );
+    const data = purchaseTotals.map((purchaseTotal) => {
+      const deliveryCost = costTotals.find(
+        (costTotal) => costTotal.supplierId === purchaseTotal.supplierId
+      ).costTotal;
+      const invoiceData = {
+        ...purchaseTotal,
+        delivery: deliveryCost,
+        subtotal: purchaseTotal.total,
+        total: parseInt(deliveryCost) + parseInt(purchaseTotal.total),
+      };
+      return invoiceData;
+    });
+
+    res.json({ data: data });
   } catch (error) {
     next(error);
   }
