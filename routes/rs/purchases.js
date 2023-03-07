@@ -97,7 +97,7 @@ router.patch("/:id", async (req, res, next) => {
   }
 });
 
-router.get("/bill", async (req, res, next) => {
+router.get("/individual-invoice", async (req, res, next) => {
   try {
     const { startDate, endDate, supplierId } = req.query;
 
@@ -136,22 +136,9 @@ router.get("/bill", async (req, res, next) => {
   }
 });
 
-router.get("/weekly-invoices", async (req, res, next) => {
+router.get("/report-invoice", async (req, res, next) => {
   try {
-    const currentDate = moment();
-    const startDate = currentDate
-      .clone()
-      .startOf("week")
-      .add(1, "day")
-      .format("yyyy-MM-DD");
-    const endDate = currentDate
-      .clone()
-      .endOf("week")
-      .add(1, "day")
-      .format("yyyy-MM-DD");
-
-    const startTest = "2023-02-13";
-    const endTest = "2023-02-19";
+    const { startDate, endDate } = req.query;
 
     const [purchaseTotals] = await sequelize.query(
       `
@@ -162,8 +149,8 @@ router.get("/weekly-invoices", async (req, res, next) => {
         FROM "Purchases" AS "P" 
       INNER JOIN "PurchaseDetails" AS "PD" ON "P"."id" = "PD"."PurchaseId" 
       INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
-        AND "P"."date" >= '${startTest}'
-        AND "P"."date" <= '${endTest}'
+        AND "P"."date" >= '${startDate}'
+        AND "P"."date" <= '${endDate}'
       GROUP BY "S"."name", "supplierId"
       ORDER BY "S"."name"
       `
@@ -177,8 +164,8 @@ router.get("/weekly-invoices", async (req, res, next) => {
           SUM("P"."cost") AS "costTotal"
         FROM "Purchases" AS "P" 
       INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
-        AND "P"."date" >= '${startTest}'
-        AND "P"."date" <= '${endTest}'
+        AND "P"."date" >= '${startDate}'
+        AND "P"."date" <= '${endDate}'
       GROUP BY "S"."name", "supplierId"
       ORDER BY "S"."name"
       `
