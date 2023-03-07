@@ -38,7 +38,7 @@ module.exports = (sequelize) => {
     toBeSold: {
       type: DataTypes.VIRTUAL,
       get() {
-        return !!this.Customer;
+        return !!this.CustomerId;
       },
     },
   });
