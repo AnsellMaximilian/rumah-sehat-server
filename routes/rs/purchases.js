@@ -21,6 +21,22 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.get("/designated-sales", async (req, res, next) => {
+  try {
+    const sales = await PurchaseDetail.findAll({
+      include: [Customer, Purchase, Product],
+      where: {
+        CustomerId: {
+          [Op.not]: null,
+        },
+      },
+    });
+    res.json({ data: sales });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post("/", async (req, res, next) => {
   try {
     const { date, cost, note, purchaseDetails, SupplierId } = req.body;
