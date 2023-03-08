@@ -36,5 +36,15 @@ module.exports = (sequelize) => {
         return this.Invoices?.filter((invoice) => invoice.status !== "paid");
       },
     },
+    firstActiveInvoice: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.activeInvoices
+          ? this.activeInvoices.length > 0
+            ? this.activeInvoices[0]
+            : null
+          : null;
+      },
+    },
   });
 };
