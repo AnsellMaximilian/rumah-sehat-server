@@ -19,15 +19,24 @@ const {
   createPDFStream,
   generateHTML,
 } = require("../../helpers/pdfGeneration");
+const { Op } = require("sequelize");
 
 router.get("/", async (req, res, next) => {
   try {
+    const { active } = req.query;
+    const whereClause = {};
+    if (active) {
+      whereClause.status = {
+        [Op.not]: "paid",
+      };
+    }
+
     const invoices = await Invoice.findAll({
       include: [
         { model: Delivery, include: DeliveryDetail },
         { model: Customer },
       ],
-      where: req.query,
+      where: whereClause,
     });
     res.json({ data: invoices });
   } catch (error) {
