@@ -27,6 +27,7 @@ router.get("/", async (req, res, next) => {
         { model: Delivery, include: DeliveryDetail },
         { model: Customer },
       ],
+      where: req.query,
     });
     res.json({ data: invoices });
   } catch (error) {
