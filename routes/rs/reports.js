@@ -10,6 +10,21 @@ router.get("/profits", async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
+    const [totals] = await sequelize.query(
+      `
+        SELECT
+                SUM("DD"."price" * "DD"."qty") as "totalPrice",
+                SUM("DD"."qty") as "totalQty",
+                SUM("DD"."cost" * "DD"."qty") as "totalCost",
+                SUM(("DD"."price" * "DD"."qty") - ("DD"."cost" * "DD"."qty")) as "profit"
+            FROM "Invoices" as "I"
+        INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
+        INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
+            AND "D"."date" >= '${startDate}'
+            AND "D"."date" <= '${endDate}'
+        `
+    );
+
     const [profits] = await sequelize.query(
       `
         SELECT
@@ -56,7 +71,7 @@ router.get("/profits", async (req, res, next) => {
           `
     );
 
-    res.json({ data: { profits, suppliers } });
+    res.json({ data: { profits, suppliers, totals } });
   } catch (error) {
     next(error);
   }
