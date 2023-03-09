@@ -154,6 +154,30 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.patch("/:id/pay", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const invoice = await Invoice.findByPk(id, {
+      include: [
+        {
+          model: Delivery,
+          include: [
+            { model: DeliveryType },
+            { model: DeliveryDetail, include: Product },
+          ],
+        },
+        { model: Customer },
+      ],
+    });
+    invoice.update({
+      status: invoice.paid ? "pending" : "paid",
+    });
+    res.json({ data: invoice });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch("/:id", async (req, res, next) => {
   try {
     const { CustomerId, date, note, deliveries, status } = req.body;

@@ -14,6 +14,12 @@ module.exports = (sequelize) => {
         isIn: [["draft", "pending", "paid"]],
       },
     },
+    paid: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.status === "paid";
+      },
+    },
     note: {
       type: DataTypes.TEXT,
       allowNull: true,
