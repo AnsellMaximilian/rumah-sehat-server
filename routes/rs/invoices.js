@@ -33,7 +33,14 @@ router.get("/", async (req, res, next) => {
 
     const invoices = await Invoice.findAll({
       include: [
-        { model: Delivery, include: DeliveryDetail },
+        {
+          model: Delivery,
+          include: [
+            { model: DeliveryDetail, include: Product },
+            Customer,
+            DeliveryType,
+          ],
+        },
         { model: Customer },
       ],
       where: whereClause,
@@ -74,7 +81,7 @@ router.post("/", async (req, res, next) => {
       await delivery.save();
 
       for (const deliveryDetail of deliveryDetails) {
-        const { price, qty, ProductId, makePurchase, cost, designatedSaleId } =
+        const { price, qty, ProductId, cost, designatedSaleId } =
           deliveryDetail;
 
         let makedetail = true;
@@ -100,24 +107,6 @@ router.post("/", async (req, res, next) => {
             ProductId,
             cost,
           });
-        }
-
-        // Make purchase
-        if (mode === "own") {
-          if (makePurchase) {
-            const newPurchase = Purchase.build({
-              date,
-              cost: 0,
-              SupplierId: deliveryDetail.product.SupplierId,
-            });
-            await newPurchase.save();
-
-            await newPurchase.createPurchaseDetail({
-              price: cost,
-              qty,
-              ProductId,
-            });
-          }
         }
       }
 
@@ -272,24 +261,6 @@ router.patch("/:id", async (req, res, next) => {
             qty,
             ProductId,
           });
-        }
-
-        // Make purchase
-        if (mode === "own") {
-          if (makePurchase && (!editId || (editId && !detailEditId))) {
-            const newPurchase = Purchase.build({
-              date,
-              cost: 0,
-              SupplierId: deliveryDetail.product.SupplierId,
-            });
-            await newPurchase.save();
-
-            await newPurchase.createPurchaseDetail({
-              price: cost,
-              qty,
-              ProductId,
-            });
-          }
         }
       }
 

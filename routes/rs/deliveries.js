@@ -8,6 +8,8 @@ const {
       Product,
       DeliveryType,
       Invoice,
+      PurchaseDetail,
+      Purchase,
     },
   },
 } = require("../../models/index");
@@ -32,26 +34,80 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId } =
-      req.body;
+    const {
+      date,
+      cost,
+      note,
+      deliveryDetails,
+      CustomerId,
+      DeliveryTypeId,
+      InvoiceId,
+      mode,
+      SupplierId,
+      supplierCost,
+    } = req.body;
+
+    const invoice = await Invoice.findByPk(InvoiceId);
     const newDelivery = Delivery.build({
       date,
       cost,
       note,
       CustomerId,
       DeliveryTypeId,
+      InvoiceId,
     });
     await newDelivery.save();
 
     for (const deliveryDetail of deliveryDetails) {
-      const { price, qty, ProductId } = deliveryDetail;
-      console.log({ price, qty, ProductId });
+      const { price, qty, ProductId, cost, designatedSaleId } = deliveryDetail;
 
-      await newDelivery.createDeliveryDetail({
-        price,
-        qty,
-        ProductId,
+      let makedetail = true;
+
+      if (designatedSaleId) {
+        const designatedSale = await PurchaseDetail.findByPk(designatedSaleId);
+        if (designatedSale && designatedSale.CustomerId !== null) {
+          await designatedSale.update({
+            CustomerId: null,
+          });
+        } else {
+          // designatedSale id is sent but it doesn't exist, or it does but no longer has a designated recipient
+          makedetail = false;
+        }
+      }
+
+      if (makedetail) {
+        await newDelivery.createDeliveryDetail({
+          price,
+          qty,
+          ProductId,
+          cost,
+        });
+      }
+    }
+
+    await invoice.addDelivery(newDelivery);
+
+    // Purchases
+
+    if (mode === "supplier") {
+      const newPurchase = Purchase.build({
+        date: date,
+        cost: supplierCost,
+        SupplierId,
+        DeliveryId: newDelivery.id,
       });
+
+      await newPurchase.save();
+
+      for (const purchaseDetail of deliveryDetails) {
+        const { cost, qty, ProductId } = purchaseDetail;
+
+        await newPurchase.createPurchaseDetail({
+          price: cost,
+          qty,
+          ProductId,
+        });
+      }
     }
 
     res.json({ message: "Success", data: newDelivery });
@@ -62,8 +118,20 @@ router.post("/", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId } =
-      req.body;
+    const {
+      date,
+      cost,
+      note,
+      deliveryDetails,
+      CustomerId,
+      DeliveryTypeId,
+      InvoiceId,
+      mode,
+      SupplierId,
+      supplierCost,
+      editId,
+    } = req.body;
+
     const { id } = req.params;
 
     const delivery = await Delivery.findByPk(id, {
@@ -75,7 +143,7 @@ router.patch("/:id", async (req, res, next) => {
     });
 
     await delivery.update(
-      { date, cost, note, deliveryDetails, CustomerId, DeliveryTypeId },
+      { date, cost, note, CustomerId, DeliveryTypeId },
       {
         where: {
           id: id,
@@ -90,15 +158,53 @@ router.patch("/:id", async (req, res, next) => {
       },
     });
 
-    // replace delivery details
     for (const deliveryDetail of deliveryDetails) {
-      const { price, qty, ProductId } = deliveryDetail;
+      const { price, qty, ProductId, cost, designatedSaleId } = deliveryDetail;
 
-      await delivery.createDeliveryDetail({
-        price,
-        qty,
-        ProductId,
+      let makedetail = true;
+
+      if (designatedSaleId) {
+        const designatedSale = await PurchaseDetail.findByPk(designatedSaleId);
+        if (designatedSale && designatedSale.CustomerId !== null) {
+          await designatedSale.update({
+            CustomerId: null,
+          });
+        } else {
+          // designatedSale id is sent but it doesn't exist, or it does but no longer has a designated recipient
+          makedetail = false;
+        }
+      }
+
+      if (makedetail) {
+        await delivery.createDeliveryDetail({
+          price,
+          qty,
+          ProductId,
+          cost,
+        });
+      }
+    }
+
+    // Purchases
+    if (mode === "supplier" && !editId) {
+      const newPurchase = Purchase.build({
+        date: date,
+        cost: supplierCost,
+        SupplierId,
+        DeliveryId: newDelivery.id,
       });
+
+      await newPurchase.save();
+
+      for (const purchaseDetail of deliveryDetails) {
+        const { cost, qty, ProductId } = purchaseDetail;
+
+        await newPurchase.createPurchaseDetail({
+          price: cost,
+          qty,
+          ProductId,
+        });
+      }
     }
 
     res.json({ data: delivery });
@@ -129,7 +235,7 @@ router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const delivery = await Delivery.findByPk(id, {
-      include: DeliveryDetail,
+      include: [DeliveryDetail],
     });
     await delivery.destroy({
       where: {
