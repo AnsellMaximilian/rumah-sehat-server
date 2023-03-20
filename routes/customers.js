@@ -59,7 +59,9 @@ router.post("/", async (req, res, next) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findByPk(id, {
+      include: [{ model: Region }],
+    });
     if (!customer) throw `Can't find item with id ${id}`;
     res.json({ data: customer });
   } catch (error) {
