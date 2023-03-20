@@ -23,12 +23,16 @@ const { Op } = require("sequelize");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { active } = req.query;
+    const { active, status } = req.query;
     const whereClause = {};
     if (active) {
       whereClause.status = {
         [Op.not]: "paid",
       };
+    }
+
+    if (status) {
+      whereClause.status = status;
     }
 
     const invoices = await Invoice.findAll({
