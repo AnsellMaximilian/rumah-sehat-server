@@ -110,8 +110,8 @@ Delivery.belongsTo(Customer, {
   },
 });
 
-Purchase.belongsTo(Delivery);
-Delivery.hasOne(Purchase, {
+Delivery.belongsTo(Purchase);
+Purchase.hasOne(Delivery, {
   onDelete: "SET NULL",
 });
 

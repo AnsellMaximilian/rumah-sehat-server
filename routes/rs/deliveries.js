@@ -24,7 +24,7 @@ router.get("/", async (req, res, next) => {
               InvoiceId: null,
             }
           : {},
-      include: [DeliveryDetail, Customer, DeliveryType, Invoice],
+      include: [DeliveryDetail, Customer, DeliveryType, Invoice, Purchase],
     });
     res.json({ data: deliveries });
   } catch (error) {
@@ -47,6 +47,29 @@ router.post("/", async (req, res, next) => {
       supplierCost,
     } = req.body;
 
+    let newPurchase;
+
+    // Purchases
+    if (mode === "supplier") {
+      newPurchase = Purchase.build({
+        date: date,
+        cost: supplierCost,
+        SupplierId,
+      });
+
+      await newPurchase.save();
+
+      for (const purchaseDetail of deliveryDetails) {
+        const { cost, qty, ProductId } = purchaseDetail;
+
+        await newPurchase.createPurchaseDetail({
+          price: cost,
+          qty,
+          ProductId,
+        });
+      }
+    }
+
     const invoice = await Invoice.findByPk(InvoiceId);
     const newDelivery = Delivery.build({
       date,
@@ -55,7 +78,9 @@ router.post("/", async (req, res, next) => {
       CustomerId,
       DeliveryTypeId,
       InvoiceId,
+      PurchaseId: newPurchase && mode === "supplier" ? newPurchase.id : null,
     });
+
     await newDelivery.save();
 
     for (const deliveryDetail of deliveryDetails) {
@@ -86,29 +111,6 @@ router.post("/", async (req, res, next) => {
     }
 
     await invoice.addDelivery(newDelivery);
-
-    // Purchases
-
-    if (mode === "supplier") {
-      const newPurchase = Purchase.build({
-        date: date,
-        cost: supplierCost,
-        SupplierId,
-        DeliveryId: newDelivery.id,
-      });
-
-      await newPurchase.save();
-
-      for (const purchaseDetail of deliveryDetails) {
-        const { cost, qty, ProductId } = purchaseDetail;
-
-        await newPurchase.createPurchaseDetail({
-          price: cost,
-          qty,
-          ProductId,
-        });
-      }
-    }
 
     res.json({ message: "Success", data: newDelivery });
   } catch (error) {
@@ -181,28 +183,6 @@ router.patch("/:id", async (req, res, next) => {
           qty,
           ProductId,
           cost,
-        });
-      }
-    }
-
-    // Purchases
-    if (mode === "supplier" && !editId) {
-      const newPurchase = Purchase.build({
-        date: date,
-        cost: supplierCost,
-        SupplierId,
-        DeliveryId: newDelivery.id,
-      });
-
-      await newPurchase.save();
-
-      for (const purchaseDetail of deliveryDetails) {
-        const { cost, qty, ProductId } = purchaseDetail;
-
-        await newPurchase.createPurchaseDetail({
-          price: cost,
-          qty,
-          ProductId,
         });
       }
     }
