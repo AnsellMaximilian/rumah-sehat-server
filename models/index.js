@@ -163,13 +163,13 @@ Customer.hasMany(Adjustment, {
 });
 Invoice.hasMany(Adjustment, {
   onDelete: "CASCADE",
-  as: "SourceInvoice",
+  as: "SourcedInvoiceAdjustments",
   foreignKey: "SourceInvoiceId",
 });
 
 Invoice.hasMany(Adjustment, {
   onDelete: "CASCADE",
-  as: "AdjustedInvoice",
+  as: "InvoiceAdjustments",
   foreignKey: "AdjustedInvoiceId",
 });
 
