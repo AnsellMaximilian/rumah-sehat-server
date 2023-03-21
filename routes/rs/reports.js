@@ -29,7 +29,7 @@ router.get("/profits", async (req, res, next) => {
       `
         SELECT
                 "P"."name" as "product",
-                "P"."price",
+                "DD"."price",
                 "P"."cost",
                 "P"."SupplierId" as "supplierId",
                 "P"."id" as "productId",
@@ -45,7 +45,7 @@ router.get("/profits", async (req, res, next) => {
         INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
             AND "D"."date" >= '${startDate}'
             AND "D"."date" <= '${endDate}'
-        GROUP BY "product", "P"."price", "P"."cost", "supplierId", "S"."name", "productId"
+        GROUP BY "product", "DD"."price", "P"."cost", "supplierId", "S"."name", "productId"
 
         `
     );
