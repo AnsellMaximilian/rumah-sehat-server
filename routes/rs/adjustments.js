@@ -7,8 +7,18 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
+    const { pending, CustomerId } = req.query;
+    const whereClause = {};
+    if (pending) {
+      whereClause.AdjustedInvoiceId = null;
+    }
+
+    if (CustomerId) {
+      whereClause.CustomerId = CustomerId;
+    }
     const adjustments = await Adjustment.findAll({
       include: ["SourceInvoice", "AdjustedInvoice", Customer],
+      where: whereClause,
     });
     res.json({ data: adjustments });
   } catch (error) {
