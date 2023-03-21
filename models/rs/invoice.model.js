@@ -41,12 +41,21 @@ module.exports = (sequelize) => {
     totalPrice: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.Deliveries
-          ? this.Deliveries.reduce(
-              (total, delivery) => total + delivery.totalPrice,
+        const adjustments = this.InvoiceAdjustments
+          ? this.InvoiceAdjustments.reduce(
+              (total, adj) => total + adj.amount,
               0
             )
           : 0;
+
+        return (
+          (this.Deliveries
+            ? this.Deliveries.reduce(
+                (total, delivery) => total + delivery.totalPrice,
+                0
+              )
+            : 0) + adjustments
+        );
       },
     },
   });
