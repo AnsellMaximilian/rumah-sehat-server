@@ -104,7 +104,7 @@ router.patch("/:id", async (req, res, next) => {
 
     if (source && source.status !== "paid")
       throw new Error("Only paid invoices can be set as source.");
-    if (source && adjusted.status === "paid")
+    if (adjusted && adjusted.status === "paid")
       throw new Error("Only non paid invoices can be adjusted.");
 
     await adjustment.update(
