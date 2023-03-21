@@ -14,6 +14,7 @@ const {
       DrDiscountModel,
       Region,
       PurchaseDetail,
+      Adjustment,
     },
   },
 } = require("../models/index");
@@ -60,7 +61,7 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const customer = await Customer.findByPk(id, {
-      include: [{ model: Region }],
+      include: [{ model: Region }, { model: Adjustment }],
     });
     if (!customer) throw `Can't find item with id ${id}`;
     res.json({ data: customer });

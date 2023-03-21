@@ -23,7 +23,7 @@ const { Op } = require("sequelize");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { active, status } = req.query;
+    const { active, status, CustomerId } = req.query;
     const whereClause = {};
     if (active) {
       whereClause.status = {
@@ -33,6 +33,10 @@ router.get("/", async (req, res, next) => {
 
     if (status) {
       whereClause.status = status;
+    }
+
+    if (CustomerId) {
+      whereClause.CustomerId = CustomerId;
     }
 
     const invoices = await Invoice.findAll({
