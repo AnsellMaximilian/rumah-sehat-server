@@ -8,6 +8,7 @@ router.use("/deliveries", require("./deliveries"));
 router.use("/invoices", require("./invoices"));
 router.use("/purchases", require("./purchases"));
 router.use("/adjustments", require("./adjustments"));
+router.use("/purchase-adjustments", require("./purchaseAdjustments"));
 router.use("/reports", require("./reports"));
 router.use("/seed", require("./seed"));
 

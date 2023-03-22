@@ -15,6 +15,7 @@ const modelDefiners = [
   require("./rs/purchaseDetail.model"),
   require("./rs/invoice.model"),
   require("./rs/adjustment.model"),
+  require("./rs/purchaseAdjustment.model"),
 
   // DR's Secret
   require("./dr/discountModel.model"),
@@ -56,6 +57,7 @@ const {
   Invoice,
   Purchase,
   PurchaseDetail,
+  PurchaseAdjustment,
   Adjustment,
 
   // DR's
@@ -172,6 +174,16 @@ Invoice.hasMany(Adjustment, {
   as: "InvoiceAdjustments",
   foreignKey: "AdjustedInvoiceId",
 });
+
+PurchaseAdjustment.belongsTo(Purchase, { as: "SourcePurchase" });
+PurchaseAdjustment.belongsTo(Adjustment);
+PurchaseAdjustment.belongsTo(Supplier);
+Adjustment.hasOne(PurchaseAdjustment);
+Purchase.hasMany(PurchaseAdjustment, {
+  as: "SourcedPurchaseAdjustments",
+  foreignKey: "SourcePurchaseId",
+});
+Supplier.hasMany(PurchaseAdjustment);
 
 // DR's
 DrIdDelivery.belongsTo(DrDiscountModel);

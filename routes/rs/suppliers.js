@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Supplier, Product },
+    models: { Supplier, Product, PurchaseAdjustment },
   },
 } = require("../../models/index");
 
@@ -16,7 +16,9 @@ router.get("/", async (req, res, next) => {
 
 router.get("/active", async (req, res, next) => {
   try {
-    const suppliers = await Supplier.findAll({ include: Product });
+    const suppliers = await Supplier.findAll({
+      include: [Product, PurchaseAdjustment],
+    });
     res.json({
       data: suppliers.filter((supplier) => supplier.Products.length > 0),
     });
@@ -41,7 +43,9 @@ router.post("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const supplier = await Supplier.findByPk(id);
+    const supplier = await Supplier.findByPk(id, {
+      include: [PurchaseAdjustment],
+    });
     if (!supplier) throw `Can't find supplier with id ${id}`;
     res.json({ data: supplier });
   } catch (error) {

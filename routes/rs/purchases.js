@@ -12,8 +12,15 @@ const moment = require("moment");
 
 router.get("/", async (req, res, next) => {
   try {
+    const { SupplierId } = req.query;
+    const whereClause = {};
+
+    if (SupplierId) {
+      whereClause.SupplierId = SupplierId;
+    }
     const purchases = await Purchase.findAll({
       include: [PurchaseDetail, Supplier, Delivery],
+      where: whereClause,
     });
     res.json({ data: purchases });
   } catch (error) {
