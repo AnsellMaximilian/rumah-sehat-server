@@ -124,7 +124,7 @@ router.get("/individual-invoice", async (req, res, next) => {
   try {
     const { startDate, endDate, supplierId } = req.query;
 
-    const [details, metadata] = await sequelize.query(
+    const [details] = await sequelize.query(
       `
       SELECT 
           "Pr"."name", SUM("PD"."qty") AS "qty", 
@@ -153,7 +153,21 @@ router.get("/individual-invoice", async (req, res, next) => {
       `
     );
 
-    res.json({ data: { cost, details } });
+    const [adjustment] = await sequelize.query(
+      `
+      SELECT 
+          SUM("PA"."amount") AS "adjustmentTotal"
+
+        FROM "PurchaseAdjustments" AS "PA" 
+      INNER JOIN "Suppliers" AS "S" ON "S"."id" = "PA"."SupplierId"
+        WHERE "PA"."SupplierId"=${supplierId}
+        AND "PA"."date" >= '${startDate}'
+        AND "PA"."date" <= '${endDate}'
+
+      `
+    );
+
+    res.json({ data: { cost, details, adjustment } });
   } catch (error) {
     next(error);
   }
@@ -193,15 +207,39 @@ router.get("/report-invoice", async (req, res, next) => {
       ORDER BY "S"."name"
       `
     );
+
+    const [adjustments] = await sequelize.query(
+      `
+      SELECT 
+          "S"."id" AS "supplierId",
+          "S".name AS "supplierName",
+          SUM("PA"."amount") AS "adjustmentTotal"
+        FROM "PurchaseAdjustments" AS "PA" 
+      INNER JOIN "Suppliers" AS "S" ON "S"."id" = "PA"."SupplierId"
+        AND "PA"."date" >= '${startDate}'
+        AND "PA"."date" <= '${endDate}'
+      GROUP BY "S"."name", "supplierId"
+      ORDER BY "S"."name"
+      `
+    );
+
     const data = purchaseTotals.map((purchaseTotal) => {
       const deliveryCost = costTotals.find(
         (costTotal) => costTotal.supplierId === purchaseTotal.supplierId
       ).costTotal;
+      const adjustmentTotal =
+        adjustments.find(
+          (adjustment) => adjustment.supplierId === purchaseTotal.supplierId
+        )?.adjustmentTotal || 0;
       const invoiceData = {
         ...purchaseTotal,
         delivery: deliveryCost,
+        adjustmentTotal,
         subtotal: purchaseTotal.total,
-        total: parseInt(deliveryCost) + parseInt(purchaseTotal.total),
+        total:
+          parseInt(deliveryCost) +
+          parseInt(purchaseTotal.total) +
+          parseInt(adjustmentTotal),
       };
       return invoiceData;
     });

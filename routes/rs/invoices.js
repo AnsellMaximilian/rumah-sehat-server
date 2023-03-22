@@ -24,8 +24,17 @@ const { Op } = require("sequelize");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { active, status, CustomerId } = req.query;
+    const {
+      active,
+      status,
+      CustomerId,
+      deliveriesStartDate,
+      deliveriesEndDate,
+      invoiceStartDate,
+      invoiceEndDate,
+    } = req.query;
     const whereClause = {};
+    const deliveriesWhereClause = {};
     if (active) {
       whereClause.status = {
         [Op.not]: "paid",
@@ -40,6 +49,31 @@ router.get("/", async (req, res, next) => {
       whereClause.CustomerId = CustomerId;
     }
 
+    if (deliveriesStartDate) {
+      deliveriesWhereClause.date = {
+        [Op.gte]: deliveriesStartDate,
+      };
+    }
+
+    if (deliveriesEndDate) {
+      deliveriesWhereClause.date = {
+        ...deliveriesWhereClause.date,
+        [Op.lte]: deliveriesEndDate,
+      };
+    }
+
+    if (invoiceStartDate) {
+      whereClause.date = {
+        [Op.gte]: invoiceStartDate,
+      };
+    }
+
+    if (invoiceEndDate) {
+      whereClause.date = {
+        ...whereClause.date,
+        [Op.lte]: invoiceEndDate,
+      };
+    }
     const invoices = await Invoice.findAll({
       include: [
         {
@@ -58,6 +92,7 @@ router.get("/", async (req, res, next) => {
             Customer,
             DeliveryType,
           ],
+          where: deliveriesWhereClause,
         },
         { model: Customer },
       ],
