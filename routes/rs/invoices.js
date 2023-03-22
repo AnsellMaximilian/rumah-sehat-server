@@ -128,6 +128,15 @@ router.patch("/:id/pay", async (req, res, next) => {
     const invoice = await Invoice.findByPk(id, {
       include: [
         {
+          model: Adjustment,
+          as: "SourcedInvoiceAdjustments",
+        },
+        {
+          model: Adjustment,
+          as: "InvoiceAdjustments",
+        },
+
+        {
           model: Delivery,
           include: [
             { model: DeliveryType },
