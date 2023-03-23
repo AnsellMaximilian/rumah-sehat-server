@@ -34,6 +34,12 @@
               <div class="label">PEMBAYARAN</div>
               <div class="value">BCA: 598-034-6333 (F.M. Fenty Effendy)</div>
             </div>
+            {{#if invoice.note}}
+            <div class="value-display">
+              <div class="label">NOTE</div>
+              <div class="value">{{invoice.note}}</div>
+            </div>
+            {{/if}}
           </div>
         </div>
       </header>
