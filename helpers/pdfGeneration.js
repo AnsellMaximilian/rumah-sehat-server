@@ -63,8 +63,8 @@ const savePDF = async (templateName, data, savePath) => {
 
     browser.close();
   } catch (error) {
-    console.log(error);
     await browser.close();
+    throw new Error(error);
   }
 };
 

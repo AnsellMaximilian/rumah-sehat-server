@@ -151,26 +151,34 @@ router.post("/bulk-print", async (req, res, next) => {
       });
     }
 
+    const successes = [];
+    const fails = [];
+
     for (const invoice of invoices) {
-      const invoiceJSON = invoice.toJSON();
-      await savePDF(
-        path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
-        {
-          invoice: {
-            ...invoiceJSON,
+      try {
+        const invoiceJSON = invoice.toJSON();
+        await savePDF(
+          path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
+          {
+            invoice: {
+              ...invoiceJSON,
+            },
           },
-        },
-        path.join(
-          directoryPath,
-          `INVOICE-RS NO-${invoice.id} ${invoice.customerFullName.replace(
-            /[^a-z0-9]/gi,
-            "_"
-          )} ${invoice.date}.pdf`
-        )
-      );
+          path.join(
+            directoryPath,
+            `INVOICE-RS NO-${invoice.id} ${invoice.customerFullName.replace(
+              /[^a-z0-9]/gi,
+              "_"
+            )} ${invoice.date}.pdf`
+          )
+        );
+        successes.push(invoice);
+      } catch (error) {
+        fails.push(invoice);
+      }
     }
 
-    res.json({ message: "Success", data: invoices });
+    res.json({ message: "Success", data: { successes, fails } });
   } catch (error) {
     console.error(error);
     next(error);
