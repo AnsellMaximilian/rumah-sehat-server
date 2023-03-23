@@ -42,24 +42,30 @@ const createPDFStream = async (templateName, data) => {
   }
 };
 
-// const savePDF = async (templateName, data, savePath) => {
-//   const browser = await puppeteer.launch({ headless: true });
-//   const page = await browser.newPage();
+const savePDF = async (templateName, data, savePath) => {
+  const browser = await puppeteer.launch({ headless: true });
+  try {
+    const page = await browser.newPage();
 
-//   const html = generateHTML(templateName, data);
+    const html = generateHTML(templateName, data);
 
-//   await page.setContent(html, {
-//     waitUntil: "domcontentloaded",
-//   });
+    await page.setContent(html, {
+      waitUntil: "domcontentloaded",
+    });
 
-//   await page.emulateMediaType("screen");
+    await page.emulateMediaType("screen");
 
-//   const pdf = await page.pdf({
-//     format: "A4",
-//     path: savePath,
-//   });
+    const pdf = await page.pdf({
+      format: "A4",
+      path: savePath,
+      printBackground: true,
+    });
 
-//   res.end(savePath);
-// };
+    browser.close();
+  } catch (error) {
+    console.log(error);
+    await browser.close();
+  }
+};
 
-module.exports = { generateHTML, createPDFStream };
+module.exports = { generateHTML, createPDFStream, savePDF };

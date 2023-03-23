@@ -1,5 +1,7 @@
 const router = require("express").Router();
 const path = require("path");
+const moment = require("moment");
+const fs = require("fs");
 
 const {
   sequelize: {
@@ -19,6 +21,7 @@ const {
 const {
   createPDFStream,
   generateHTML,
+  savePDF,
 } = require("../../helpers/pdfGeneration");
 const { Op } = require("sequelize");
 
@@ -84,13 +87,12 @@ router.get("/", async (req, res, next) => {
           model: Adjustment,
           as: "InvoiceAdjustments",
         },
-
         {
           model: Delivery,
           include: [
+            { model: DeliveryType },
             { model: DeliveryDetail, include: Product },
-            Customer,
-            DeliveryType,
+            { model: Customer },
           ],
           where: deliveriesWhereClause,
         },
@@ -100,6 +102,77 @@ router.get("/", async (req, res, next) => {
     });
     res.json({ data: invoices });
   } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/bulk-print", async (req, res, next) => {
+  try {
+    const { fileNamePrefix, invoiceIds } = req.body;
+
+    const invoices = await Invoice.findAll({
+      include: [
+        {
+          model: Adjustment,
+          as: "SourcedInvoiceAdjustments",
+        },
+        {
+          model: Adjustment,
+          as: "InvoiceAdjustments",
+        },
+        {
+          model: Delivery,
+          include: [
+            { model: DeliveryType },
+            { model: DeliveryDetail, include: Product },
+            { model: Customer },
+          ],
+        },
+        { model: Customer },
+      ],
+      where: {
+        id: invoiceIds,
+      },
+    });
+
+    const directoryPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "pdfs",
+      "rs",
+      "invoices",
+      `${fileNamePrefix}__${moment().format("DD-MM-YYY_hh-mm-ss")}`
+    );
+
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, {
+        recursive: true,
+      });
+    }
+
+    for (const invoice of invoices) {
+      const invoiceJSON = invoice.toJSON();
+      await savePDF(
+        path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
+        {
+          invoice: {
+            ...invoiceJSON,
+          },
+        },
+        path.join(
+          directoryPath,
+          `INVOICE-RS NO-${invoice.id} ${invoice.customerFullName.replace(
+            /[^a-z0-9]/gi,
+            "_"
+          )} ${invoice.date}.pdf`
+        )
+      );
+    }
+
+    res.json({ message: "Success", data: invoices });
+  } catch (error) {
+    console.error(error);
     next(error);
   }
 });
@@ -141,6 +214,7 @@ router.patch("/:id/pay", async (req, res, next) => {
           include: [
             { model: DeliveryType },
             { model: DeliveryDetail, include: Product },
+            { model: Customer },
           ],
         },
         { model: Customer },
@@ -177,6 +251,7 @@ router.patch("/:id", async (req, res, next) => {
           include: [
             { model: DeliveryType },
             { model: DeliveryDetail, include: Product },
+            { model: Customer },
           ],
         },
         { model: Customer },
@@ -222,8 +297,8 @@ router.get("/:id", async (req, res, next) => {
           model: Delivery,
           include: [
             { model: DeliveryDetail, include: Product },
-            { model: Customer },
             { model: DeliveryType },
+            { model: Customer },
           ],
         },
         { model: Customer },
@@ -274,8 +349,8 @@ router.get("/:id/print", async (req, res, next) => {
           model: Delivery,
           include: [
             { model: DeliveryDetail, include: Product },
-            { model: Customer },
             { model: DeliveryType },
+            { model: Customer },
           ],
         },
       ],
