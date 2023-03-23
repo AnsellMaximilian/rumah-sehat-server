@@ -108,7 +108,20 @@ router.get("/", async (req, res, next) => {
 
 router.post("/bulk-print", async (req, res, next) => {
   try {
-    const { fileNamePrefix, invoiceIds } = req.body;
+    const { fileNamePrefix, invoiceIds, setDraftsPending } = req.body;
+    if (setDraftsPending) {
+      await Invoice.update(
+        {
+          status: "pending",
+        },
+        {
+          where: {
+            id: invoiceIds,
+            status: "draft",
+          },
+        }
+      );
+    }
 
     const invoices = await Invoice.findAll({
       include: [
