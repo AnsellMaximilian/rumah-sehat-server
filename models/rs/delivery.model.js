@@ -1,4 +1,5 @@
 const { DataTypes } = require("sequelize");
+const moment = require("moment");
 
 module.exports = (sequelize) => {
   sequelize.define("Delivery", {
@@ -44,6 +45,12 @@ module.exports = (sequelize) => {
       type: DataTypes.VIRTUAL,
       get() {
         return this.subtotalPrice + this.cost;
+      },
+    },
+    datePretty: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return moment(this.date).format("DD MMM YYYY");
       },
     },
   });

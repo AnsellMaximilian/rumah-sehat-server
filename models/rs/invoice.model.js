@@ -58,5 +58,11 @@ module.exports = (sequelize) => {
         );
       },
     },
+    hasInvoiceAdjustments: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.InvoiceAdjustments?.length > 0;
+      },
+    },
   });
 };

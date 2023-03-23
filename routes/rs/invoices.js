@@ -284,18 +284,7 @@ router.get("/:id/print", async (req, res, next) => {
 
     const invoiceJSON = invoice.toJSON();
 
-    const pdfStream = await createPDFStream(
-      path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
-      {
-        invoice: {
-          ...invoiceJSON,
-        },
-      }
-    );
-
-    pdfStream.pipe(res);
-
-    // const html = generateHTML(
+    // const pdfStream = await createPDFStream(
     //   path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
     //   {
     //     invoice: {
@@ -303,7 +292,18 @@ router.get("/:id/print", async (req, res, next) => {
     //     },
     //   }
     // );
-    // res.end(html);
+
+    // pdfStream.pipe(res);
+
+    const html = generateHTML(
+      path.join(__dirname, "..", "..", "templates", "rs-invoice2.hbs"),
+      {
+        invoice: {
+          ...invoiceJSON,
+        },
+      }
+    );
+    res.end(html);
   } catch (error) {
     console.log(error);
     next(error);

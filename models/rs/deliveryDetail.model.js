@@ -24,6 +24,13 @@ module.exports = (sequelize) => {
       },
     },
 
+    qtyPretty: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return parseFloat(this.qty);
+      },
+    },
+
     productName: {
       type: DataTypes.VIRTUAL,
       get() {

@@ -61,7 +61,7 @@
                         Delivery #{{../this.id}}
                     </div>
                     <div>
-                        {{../this.date}}
+                        {{../this.datePretty}}
                     </div>
                     <br>
                     <div>
@@ -78,12 +78,13 @@
                 
                 <td>{{this.Product.name}}</td>
                 <td>{{formatRP this.price}}</td>
-                <td>{{this.qty}}</td>
+                <td>{{this.qtyPretty}}</td>
                 <td>{{formatRP this.totalPrice}}</td>
               </tr>
               {{/each}}
               <tr class="delivery-cost">
-                <td colspan="3">{{this.DeliveryType.name}}</td>
+                <td>Ongkir</td>
+                <td colspan="2">{{this.DeliveryType.name}}</td>
                 <td>{{formatRP this.cost}}</td>
               </tr>
               <tr class="table__result">
@@ -101,6 +102,21 @@
           </table>
         </article>
       </article>
+
+      {{#if invoice.hasInvoiceAdjustments}}
+      <article id="adjustments">
+        <div id="adjustments__title">Penyesuaian</div>
+        <div id="adjustments__items">
+          {{#each invoice.InvoiceAdjustments}}
+          <div class="adjustments__items__item">
+            <div>#{{this.id}}</div>
+            <div>{{this.description}}</div>
+            <div>: {{formatRP this.amount}}</div>
+          </div>
+          {{/each}}
+        </div>
+      </article>
+      {{/if}}
 
       <article id="grand-total">
         <div>AMOUNT DUE</div>
