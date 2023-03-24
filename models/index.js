@@ -215,14 +215,22 @@ DrSgItem.hasMany(DrSgDeliveryDetail);
 DrIdDeliveryDetail.belongsTo(DrIdItem);
 DrSgDeliveryDetail.belongsTo(DrSgItem);
 
-DrIdDelivery.hasMany(DrIdDeliveryDetail);
-DrSgDelivery.hasMany(DrSgDeliveryDetail);
+DrIdDelivery.hasMany(DrIdDeliveryDetail, {
+  onDelete: "CASCADE",
+});
+DrSgDelivery.hasMany(DrSgDeliveryDetail, {
+  onDelete: "CASCADE",
+});
 
 DrIdDelivery.belongsTo(DrInvoice);
 DrSgDelivery.belongsTo(DrInvoice);
 
-DrInvoice.hasMany(DrIdDelivery);
-DrInvoice.hasMany(DrSgDelivery);
+DrInvoice.hasMany(DrIdDelivery, {
+  onDelete: "CASCADE",
+});
+DrInvoice.hasMany(DrSgDelivery, {
+  onDelete: "CASCADE",
+});
 
 sequelize
   .sync({ alter: true })
