@@ -10,6 +10,56 @@ const {
 const { Op, QueryTypes } = require("sequelize");
 const moment = require("moment");
 
+const getPurchaseTotals = async (startDate, endDate) => {
+  const [purchaseTotals] = await sequelize.query(
+    `
+    SELECT 
+        "S"."id" AS "supplierId",
+        "S".name AS "supplierName",
+        SUM("PD"."price" * "PD"."qty") AS "total"
+      FROM "Purchases" AS "P" 
+    INNER JOIN "PurchaseDetails" AS "PD" ON "P"."id" = "PD"."PurchaseId" 
+    INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
+      AND "P"."date" >= '${startDate}'
+      AND "P"."date" <= '${endDate}'
+    GROUP BY "S"."name", "supplierId"
+    ORDER BY "S"."name"
+    `
+  );
+
+  const [costTotals] = await sequelize.query(
+    `
+    SELECT 
+        "S"."id" AS "supplierId",
+        "S".name AS "supplierName",
+        SUM("P"."cost") AS "costTotal"
+      FROM "Purchases" AS "P" 
+    INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
+      AND "P"."date" >= '${startDate}'
+      AND "P"."date" <= '${endDate}'
+    GROUP BY "S"."name", "supplierId"
+    ORDER BY "S"."name"
+    `
+  );
+
+  const [adjustments] = await sequelize.query(
+    `
+    SELECT 
+        "S"."id" AS "supplierId",
+        "S".name AS "supplierName",
+        SUM("PA"."amount") AS "adjustmentTotal"
+      FROM "PurchaseAdjustments" AS "PA" 
+    INNER JOIN "Suppliers" AS "S" ON "S"."id" = "PA"."SupplierId"
+      AND "PA"."date" >= '${startDate}'
+      AND "PA"."date" <= '${endDate}'
+    GROUP BY "S"."name", "supplierId"
+    ORDER BY "S"."name"
+    `
+  );
+
+  return { purchaseTotals, adjustments, costTotals };
+};
+
 router.get("/", async (req, res, next) => {
   try {
     const { SupplierId } = req.query;
@@ -177,50 +227,9 @@ router.get("/report-invoice", async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
-    const [purchaseTotals] = await sequelize.query(
-      `
-      SELECT 
-          "S"."id" AS "supplierId",
-          "S".name AS "supplierName",
-          SUM("PD"."price" * "PD"."qty") AS "total"
-        FROM "Purchases" AS "P" 
-      INNER JOIN "PurchaseDetails" AS "PD" ON "P"."id" = "PD"."PurchaseId" 
-      INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
-        AND "P"."date" >= '${startDate}'
-        AND "P"."date" <= '${endDate}'
-      GROUP BY "S"."name", "supplierId"
-      ORDER BY "S"."name"
-      `
-    );
-
-    const [costTotals] = await sequelize.query(
-      `
-      SELECT 
-          "S"."id" AS "supplierId",
-          "S".name AS "supplierName",
-          SUM("P"."cost") AS "costTotal"
-        FROM "Purchases" AS "P" 
-      INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
-        AND "P"."date" >= '${startDate}'
-        AND "P"."date" <= '${endDate}'
-      GROUP BY "S"."name", "supplierId"
-      ORDER BY "S"."name"
-      `
-    );
-
-    const [adjustments] = await sequelize.query(
-      `
-      SELECT 
-          "S"."id" AS "supplierId",
-          "S".name AS "supplierName",
-          SUM("PA"."amount") AS "adjustmentTotal"
-        FROM "PurchaseAdjustments" AS "PA" 
-      INNER JOIN "Suppliers" AS "S" ON "S"."id" = "PA"."SupplierId"
-        AND "PA"."date" >= '${startDate}'
-        AND "PA"."date" <= '${endDate}'
-      GROUP BY "S"."name", "supplierId"
-      ORDER BY "S"."name"
-      `
+    const { purchaseTotals, costTotals, adjustments } = await getPurchaseTotals(
+      startDate,
+      endDate
     );
 
     const data = purchaseTotals.map((purchaseTotal) => {

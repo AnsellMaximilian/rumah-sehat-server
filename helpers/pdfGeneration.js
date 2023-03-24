@@ -12,7 +12,7 @@ const generateHTML = (templatePath, data) => {
   return html;
 };
 
-const createPDFStream = async (templateName, data) => {
+const createPDFStream = async (templateName, data, dynamicPage = false) => {
   const browser = await puppeteer.launch({ headless: true });
 
   try {
@@ -26,8 +26,12 @@ const createPDFStream = async (templateName, data) => {
 
     await page.emulateMediaType("screen");
 
+    const dynamicHeight = await page.evaluate(() => {
+      return document.documentElement.offsetHeight;
+    });
+
     const pdfStream = await page.createPDFStream({
-      format: "A4",
+      ...(dynamicPage ? { height: dynamicHeight + "px" } : { format: "A4" }),
       printBackground: true,
     });
 
