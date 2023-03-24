@@ -10,6 +10,7 @@ const {
     models: { Product, ProductCategory, Supplier },
   },
 } = require("../../models/index");
+const moment = require("moment");
 
 const getProfits = async (startDate, endDate) => {
   const [totals] = await sequelize.query(
@@ -221,8 +222,8 @@ router.get("/print", async (req, res, next) => {
       }),
       totals: totals[0],
       profits,
-      startDate,
-      endDate,
+      startDate: moment(startDate).format("DD MMM YYYY"),
+      endDate: moment(endDate).format("DD MMM YYYY"),
       purchaseTotals: purchaseTotals.map((pt) => {
         const supplierDeliveries = costTotals.find(
           (ct) => ct.supplierId === pt.supplierId
