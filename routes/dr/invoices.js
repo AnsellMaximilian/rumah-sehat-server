@@ -159,25 +159,19 @@ router.get("/:id/print", async (req, res, next) => {
   }
 });
 
-// router.delete("/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const model = await DrDiscountModel.findByPk(id, { include: DrIdDelivery });
-
-//     if (model.DrIdDeliveries.length === 0) {
-//       await model.destroy({
-//         where: {
-//           id: id,
-//         },
-//       });
-//       res.json({ data: model });
-//     } else {
-//       res.json({ error: "Failed to delete. This model has deliveries." });
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     res.json({ error });
-//   }
-// });
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const invoice = await DrInvoice.findByPk(id);
+    await invoice.destroy({
+      where: {
+        id: id,
+      },
+    });
+    res.json({ data: invoice });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;
