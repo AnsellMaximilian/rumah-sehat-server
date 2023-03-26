@@ -15,16 +15,19 @@ const {
       Region,
       PurchaseDetail,
       Adjustment,
+      DrInvoice,
     },
   },
 } = require("../models/index");
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const customers = await Customer.findAll({ include: [Region, Invoice] });
+    const customers = await Customer.findAll({
+      include: [{ model: Region }, { model: Invoice }, { model: DrInvoice }],
+    });
     res.json({ data: customers });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 

@@ -20,6 +20,12 @@ module.exports = (sequelize) => {
         return this.Customer?.fullName;
       },
     },
+    customerFullName: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.Customer?.fullName;
+      },
+    },
     totalPriceRP: {
       type: DataTypes.VIRTUAL,
       get() {

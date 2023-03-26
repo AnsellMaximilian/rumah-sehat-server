@@ -209,6 +209,10 @@ DrInvoice.belongsTo(Customer, {
   },
 });
 
+Customer.hasMany(DrInvoice);
+Customer.hasMany(DrIdDelivery);
+Customer.hasMany(DrSgDelivery);
+
 DrIdItem.hasMany(DrIdDeliveryDetail);
 DrSgItem.hasMany(DrSgDeliveryDetail);
 

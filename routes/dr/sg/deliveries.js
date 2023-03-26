@@ -41,6 +41,7 @@ router.post("/", async (req, res, next) => {
       DrDiscountModelId,
       exchangeRate,
       deliveryCostType,
+      DrInvoiceId,
     } = req.body;
     const newDelivery = DrSgDelivery.build({
       date,
@@ -50,6 +51,7 @@ router.post("/", async (req, res, next) => {
       DrDiscountModelId,
       exchangeRate,
       deliveryCostType,
+      DrInvoiceId,
     });
     await newDelivery.save();
 
@@ -160,8 +162,6 @@ router.delete("/:id", async (req, res, next) => {
     const delivery = await DrSgDelivery.findByPk(id, {
       include: DrSgDeliveryDetail,
     });
-    if (delivery.DrSgDeliveryDetails.length > 0)
-      throw "Can't delete: This delivery is not empty.";
     await delivery.destroy({
       where: {
         id: id,
