@@ -94,6 +94,30 @@ router.get("/designated-sales", async (req, res, next) => {
   }
 });
 
+router.post("/pay", async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.body;
+
+    const updatedTotal = await Purchase.update(
+      {
+        paid: true,
+      },
+      {
+        where: {
+          date: {
+            [Op.gte]: startDate,
+            [Op.lte]: endDate,
+          },
+        },
+      }
+    );
+    console.log(updatedTotal);
+    res.json({ data: updatedTotal });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post("/", async (req, res, next) => {
   try {
     const { date, cost, note, purchaseDetails, SupplierId } = req.body;
