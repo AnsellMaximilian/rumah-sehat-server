@@ -94,7 +94,9 @@ router.get("/", async (req, res, next) => {
             { model: DeliveryDetail, include: Product },
             { model: Customer },
           ],
-          where: deliveriesWhereClause,
+          ...(Object.keys(deliveriesWhereClause).length > 0
+            ? { where: deliveriesWhereClause }
+            : {}),
         },
         { model: Customer },
       ],
@@ -108,12 +110,27 @@ router.get("/", async (req, res, next) => {
 
 router.post("/bulk-print", async (req, res, next) => {
   try {
-    const { fileNamePrefix, invoiceIds, setDraftsPending } = req.body;
+    const {
+      fileNamePrefix,
+      invoiceIds,
+      setDraftsPending,
+      setInvoicesDateToToday,
+    } = req.body;
+
+    if (setInvoicesDateToToday) {
+      await Invoice.update(
+        { date: moment().format("YYYY-MM-DD") },
+        {
+          where: {
+            id: invoiceIds,
+          },
+        }
+      );
+    }
+
     if (setDraftsPending) {
       await Invoice.update(
-        {
-          status: "pending",
-        },
+        { status: "pending" },
         {
           where: {
             id: invoiceIds,
