@@ -49,7 +49,7 @@ const getProfits = async (startDate, endDate) => {
           AND "D"."date" >= '${startDate}'
           AND "D"."date" <= '${endDate}'
       GROUP BY "product", "DD"."price", "P"."cost", "supplierId", "S"."name", "productId"
-
+      ORDER BY "product"
       `
   );
 
