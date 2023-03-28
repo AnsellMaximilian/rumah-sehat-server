@@ -21,7 +21,7 @@ router.get("/", async (req, res, next) => {
       whereClause.SupplierId = SupplierId;
     }
     const adjustments = await PurchaseAdjustment.findAll({
-      include: ["SourcePurchase"],
+      include: ["SourcePurchase", Adjustment],
       where: whereClause,
     });
     res.json({ data: adjustments });
@@ -66,7 +66,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const adjustment = await PurchaseAdjustment.findByPk(id, {
-      include: [Supplier],
+      include: [Supplier, "SourcePurchase", Adjustment],
     });
     if (!adjustment) throw `Can't find adjustment with id ${id}`;
     res.json({ data: adjustment });
