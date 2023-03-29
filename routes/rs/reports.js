@@ -302,7 +302,9 @@ router.get("/products", async (req, res, next) => {
                 SUM("DD"."qty") as "totalQty",
                 SUM("DD"."cost" * "DD"."qty") as "totalCost",
                 SUM(("DD"."price" * "DD"."qty") - ("DD"."cost" * "DD"."qty")) as "profit",
-                "D"."date" as "saleDate"
+                "D"."date" as "saleDate",
+                "D"."id" as "DeliveryId",
+                "I"."id" as "InvoiceId"
             FROM "Invoices" as "I"
         INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
         INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
@@ -312,7 +314,7 @@ router.get("/products", async (req, res, next) => {
             AND "D"."date" >= '${startDate}'
             AND "D"."date" <= '${endDate}'
             AND "P"."id" = ${productId}
-        GROUP BY "product", "DD"."price", "DD"."cost", "supplierId", "S"."name", "productId", "customerName", "deliveryDate", "DD"."id"
+        GROUP BY "product", "DD"."price", "DD"."cost", "supplierId", "S"."name", "productId", "customerName", "deliveryDate", "DD"."id", "D"."id", "I"."id"
 
         `
     );
