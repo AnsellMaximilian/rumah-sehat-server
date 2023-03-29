@@ -301,7 +301,8 @@ router.get("/products", async (req, res, next) => {
                 SUM("DD"."price" * "DD"."qty") as "totalPrice",
                 SUM("DD"."qty") as "totalQty",
                 SUM("DD"."cost" * "DD"."qty") as "totalCost",
-                SUM(("DD"."price" * "DD"."qty") - ("DD"."cost" * "DD"."qty")) as "profit"
+                SUM(("DD"."price" * "DD"."qty") - ("DD"."cost" * "DD"."qty")) as "profit",
+                "D"."date" as "saleDate"
             FROM "Invoices" as "I"
         INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
         INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
