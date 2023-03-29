@@ -24,7 +24,16 @@ router.get("/", async (req, res, next) => {
               InvoiceId: null,
             }
           : {},
-      include: [DeliveryDetail, Customer, DeliveryType, Invoice, Purchase],
+      include: [
+        DeliveryDetail,
+        Customer,
+        DeliveryType,
+        {
+          model: Invoice,
+          include: [Customer, { model: Delivery, include: DeliveryDetail }],
+        },
+        Purchase,
+      ],
     });
     res.json({ data: deliveries });
   } catch (error) {
@@ -118,6 +127,36 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.patch("/:id/switch-invoice", async (req, res, next) => {
+  try {
+    const { InvoiceId } = req.body;
+
+    const { id } = req.params;
+
+    const invoice = await Invoice.findByPk(InvoiceId);
+
+    if (invoice) {
+      await Delivery.update(
+        {
+          InvoiceId,
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+    } else {
+      throw new Error("Invoice doesn't exist.");
+    }
+
+    res.json({ data: true });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
+
 router.patch("/:id", async (req, res, next) => {
   try {
     const {
@@ -202,6 +241,11 @@ router.get("/:id", async (req, res, next) => {
         { model: DeliveryDetail, include: Product },
         { model: Customer },
         { model: DeliveryType },
+        {
+          model: Invoice,
+          include: [Customer, { model: Delivery, include: DeliveryDetail }],
+        },
+        { model: Purchase },
       ],
     });
     if (!delivery) throw `Can't find delivery with id ${id}`;
