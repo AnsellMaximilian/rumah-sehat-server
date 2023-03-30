@@ -10,7 +10,7 @@ const {
 const { Op, QueryTypes } = require("sequelize");
 const moment = require("moment");
 
-const getPurchaseTotals = async (startDate, endDate) => {
+const getPurchaseTotals = async (startDate, endDate, unpaidFilter) => {
   const [purchaseTotals] = await sequelize.query(
     `
     SELECT 
@@ -20,8 +20,12 @@ const getPurchaseTotals = async (startDate, endDate) => {
       FROM "Purchases" AS "P" 
     INNER JOIN "PurchaseDetails" AS "PD" ON "P"."id" = "PD"."PurchaseId" 
     INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
-      AND "P"."date" >= '${startDate}'
-      AND "P"."date" <= '${endDate}'
+    ${
+      unpaidFilter
+        ? `WHERE "P"."paid" = FALSE`
+        : ` AND "P"."date" >= '${startDate}'
+      AND "P"."date" <= '${endDate}'`
+    }
     GROUP BY "S"."name", "supplierId"
     ORDER BY "S"."name"
     `
@@ -35,8 +39,12 @@ const getPurchaseTotals = async (startDate, endDate) => {
         SUM("P"."cost") AS "costTotal"
       FROM "Purchases" AS "P" 
     INNER JOIN "Suppliers" AS "S" ON "S"."id" = "P"."SupplierId"
-      AND "P"."date" >= '${startDate}'
-      AND "P"."date" <= '${endDate}'
+    ${
+      unpaidFilter
+        ? `WHERE "P"."paid" = FALSE`
+        : ` AND "P"."date" >= '${startDate}'
+      AND "P"."date" <= '${endDate}'`
+    }
     GROUP BY "S"."name", "supplierId"
     ORDER BY "S"."name"
     `
@@ -196,7 +204,9 @@ router.patch("/:id", async (req, res, next) => {
 
 router.get("/individual-invoice", async (req, res, next) => {
   try {
-    const { startDate, endDate, supplierId } = req.query;
+    const { startDate, endDate, supplierId, unpaid } = req.query;
+
+    const unpaidFilter = unpaid === "yes";
 
     const [details] = await sequelize.query(
       `
@@ -208,8 +218,14 @@ router.get("/individual-invoice", async (req, res, next) => {
       INNER JOIN "PurchaseDetails" AS "PD" ON "P"."id" = "PD"."PurchaseId" 
       INNER JOIN "Products" AS "Pr" ON "Pr"."id" = "PD"."ProductId"
         WHERE "P"."SupplierId"=${supplierId}
-        AND "P"."date" >= '${startDate}'
-        AND "P"."date" <= '${endDate}'
+        ${
+          unpaidFilter
+            ? `AND "P"."paid" = FALSE`
+            : `
+            AND "P"."date" >= '${startDate}'
+            AND "P"."date" <= '${endDate}'
+            `
+        }
       GROUP BY "Pr"."name", "productPrice"
       ORDER BY "Pr"."name"
       `
@@ -249,11 +265,14 @@ router.get("/individual-invoice", async (req, res, next) => {
 
 router.get("/report-invoice", async (req, res, next) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, unpaid } = req.query;
+
+    const unpaidFilter = unpaid === "yes";
 
     const { purchaseTotals, costTotals, adjustments } = await getPurchaseTotals(
       startDate,
-      endDate
+      endDate,
+      unpaidFilter
     );
 
     const data = purchaseTotals.map((purchaseTotal) => {
