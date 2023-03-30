@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { DrDiscountModel, DrIdDelivery },
+    models: { DrDiscountModel, DrIdDelivery, DrSgDelivery },
   },
 } = require("../../models/index");
 
@@ -43,12 +43,17 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const model = await DrDiscountModel.findByPk(id, { include: DrIdDelivery });
+    const model = await DrDiscountModel.findByPk(id, {
+      include: [DrIdDelivery, DrSgDelivery],
+    });
 
-    if (model.DrIdDeliveries.length === 0) {
+    if (
+      model.DrIdDeliveries.length === 0 &&
+      model.DrSgDeliveries.length === 0
+    ) {
       await model.destroy({
         where: {
           id: id,
@@ -56,11 +61,10 @@ router.delete("/:id", async (req, res) => {
       });
       res.json({ data: model });
     } else {
-      res.json({ error: "Failed to delete. This model has deliveries." });
+      throw new Error("Failed to delete. This model has deliveries.");
     }
   } catch (error) {
-    console.log(error);
-    res.json({ error });
+    next(error);
   }
 });
 
