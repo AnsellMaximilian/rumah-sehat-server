@@ -199,7 +199,7 @@ router.post("/bulk-print", async (req, res, next) => {
             `INVOICE-RS ${invoice.customerFullName.replace(
               /[^a-z0-9]/gi,
               "_"
-            )} NO-${invoice.id} ${invoice.date}.pdf`
+            )}-${invoice.Customer.id} NO-${invoice.id} ${invoice.date}.pdf`
           )
         );
         successes.push(invoice);
