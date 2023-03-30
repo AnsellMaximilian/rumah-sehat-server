@@ -209,6 +209,42 @@ router.delete("/:id", async (req, res, next) => {
   }
 });
 
+router.patch("/:id/pay", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const invoice = await DrInvoice.findByPk(id, {
+      include: [
+        {
+          model: Customer,
+        },
+        {
+          model: DrIdDelivery,
+          include: [
+            { model: DrIdDeliveryDetail, include: DrIdItem },
+            { model: Customer },
+            { model: DrDiscountModel },
+          ],
+        },
+        {
+          model: DrSgDelivery,
+          include: [
+            { model: DrSgDeliveryDetail, include: DrSgItem },
+            { model: Customer },
+            { model: DrDiscountModel },
+          ],
+        },
+      ],
+    });
+
+    invoice.update({
+      paid: !invoice.paid,
+    });
+    res.json({ data: invoice });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
