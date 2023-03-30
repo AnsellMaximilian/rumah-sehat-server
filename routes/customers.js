@@ -129,7 +129,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const customer = await Customer.findByPk(id);
@@ -140,7 +140,7 @@ router.delete("/:id", async (req, res) => {
     });
     res.json({ data: customer });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 });
 
