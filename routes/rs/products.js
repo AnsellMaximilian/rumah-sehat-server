@@ -1,7 +1,13 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Product, ProductCategory, Supplier },
+    models: {
+      Product,
+      ProductCategory,
+      Supplier,
+      PurchaseDetail,
+      DeliveryDetail,
+    },
   },
 } = require("../../models/index");
 
@@ -49,7 +55,9 @@ router.post("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(id, {
+      include: [PurchaseDetail, DeliveryDetail],
+    });
     if (!product) throw `Can't find product with id ${id}`;
     res.json({ data: product });
   } catch (error) {
