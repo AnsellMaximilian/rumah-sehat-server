@@ -265,8 +265,7 @@ router.get("/print", async (req, res, next) => {
 
     const pdfStream = await createPDFStream(
       path.join(__dirname, "..", "..", "templates", "rs-report.hbs"),
-      data,
-      true
+      data
     );
 
     pdfStream.pipe(res);
