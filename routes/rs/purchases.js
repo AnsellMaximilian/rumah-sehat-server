@@ -309,6 +309,7 @@ router.get("/:id", async (req, res, next) => {
       include: [
         { model: PurchaseDetail, include: [Product, Customer] },
         { model: Supplier },
+        { model: Delivery },
       ],
     });
     if (!purchase) throw `Can't find purchase with id ${id}`;
