@@ -172,7 +172,7 @@ router.post("/bulk-print", async (req, res, next) => {
       "pdfs",
       "rs",
       "invoices",
-      `${fileNamePrefix}__${moment().format("DD-MM-YYY_hh-mm-ss")}`
+      `${moment().format("DD-MM-YYYY_hh-mm-ss")}__${fileNamePrefix}`
     );
 
     if (!fs.existsSync(directoryPath)) {
@@ -196,10 +196,10 @@ router.post("/bulk-print", async (req, res, next) => {
           },
           path.join(
             directoryPath,
-            `INVOICE-RS NO-${invoice.id} ${invoice.customerFullName.replace(
+            `INVOICE-RS ${invoice.customerFullName.replace(
               /[^a-z0-9]/gi,
               "_"
-            )} ${invoice.date}.pdf`
+            )} NO-${invoice.id} ${invoice.date}.pdf`
           )
         );
         successes.push(invoice);
