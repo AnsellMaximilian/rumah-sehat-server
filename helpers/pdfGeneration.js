@@ -64,7 +64,7 @@ const savePDF = async (templateName, data, savePath) => {
     });
 
     const pdf = await page.pdf({
-      height: dynamicHeight + "px",
+      height: dynamicHeight + 200 + "px",
       path: savePath,
       printBackground: true,
     });
