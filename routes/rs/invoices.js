@@ -233,7 +233,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.patch("/:id/pay", async (req, res, next) => {
+router.patch("/:id/cycle-status", async (req, res, next) => {
   try {
     const { id } = req.params;
     const invoice = await Invoice.findByPk(id, {
@@ -259,7 +259,12 @@ router.patch("/:id/pay", async (req, res, next) => {
       ],
     });
     invoice.update({
-      status: invoice.paid ? "pending" : "paid",
+      status:
+        invoice.status === "draft"
+          ? "pending"
+          : invoice.status === "pending"
+          ? "paid"
+          : "draft",
     });
     res.json({ data: invoice });
   } catch (error) {
