@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { Op } = require("sequelize");
 const {
   sequelize: {
     models: {
@@ -13,9 +14,27 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
+    const { name, SupplierId, ProductCategoryId } = req.query;
+    const whereClause = {};
+
+    if (name) {
+      whereClause.name = {
+        [Op.iLike]: `%${name}%`,
+      };
+    }
+
+    if (SupplierId) {
+      whereClause.SupplierId = SupplierId;
+    }
+
+    if (ProductCategoryId) {
+      whereClause.ProductCategoryId = ProductCategoryId;
+    }
+
     const products = await Product.findAll({
       include: [ProductCategory, Supplier],
       order: [["name", "ASC"]],
+      where: whereClause,
     });
     res.json({ data: products });
   } catch (error) {
