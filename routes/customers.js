@@ -22,7 +22,7 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { fullName, phone, address, note } = req.query;
+    const { fullName, phone, address, note, RegionId } = req.query;
     const whereClause = {};
 
     if (fullName) {
@@ -35,6 +35,10 @@ router.get("/", async (req, res, next) => {
       whereClause.address = {
         [Op.iLike]: `%${address}%`,
       };
+    }
+
+    if (RegionId) {
+      whereClause.RegionId = RegionId;
     }
 
     if (note) {
