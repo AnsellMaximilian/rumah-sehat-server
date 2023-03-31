@@ -16,17 +16,73 @@ const {
   },
 } = require("../../models/index");
 const { createPDFStream } = require("../../helpers/pdfGeneration");
+const { Op } = require("sequelize");
 
 router.get("/", async (req, res) => {
   try {
-    const { paid, unpaid } = req.query;
+    const {
+      paid,
+      unpaid,
+      CustomerId,
+      idDeliveriesStartDate,
+      idDeliveriesEndDate,
+      sgDeliveriesStartDate,
+      sgDeliveriesEndDate,
+      invoiceStartDate,
+      invoiceEndDate,
+    } = req.query;
     const whereClause = {};
+    const idDeliveriesWhereClause = {};
+    const sgDeliveriesWhereClause = {};
 
     if (paid) {
       whereClause.paid = true;
     }
     if (unpaid) {
       whereClause.paid = false;
+    }
+
+    if (CustomerId) {
+      whereClause.CustomerId = CustomerId;
+    }
+
+    if (idDeliveriesStartDate) {
+      idDeliveriesWhereClause.date = {
+        [Op.gte]: idDeliveriesStartDate,
+      };
+    }
+
+    if (idDeliveriesEndDate) {
+      idDeliveriesWhereClause.date = {
+        ...idDeliveriesWhereClause.date,
+        [Op.lte]: idDeliveriesEndDate,
+      };
+    }
+
+    if (sgDeliveriesStartDate) {
+      sgDeliveriesWhereClause.date = {
+        [Op.gte]: sgDeliveriesStartDate,
+      };
+    }
+
+    if (sgDeliveriesEndDate) {
+      sgDeliveriesWhereClause.date = {
+        ...sgDeliveriesWhereClause.date,
+        [Op.lte]: sgDeliveriesEndDate,
+      };
+    }
+
+    if (invoiceStartDate) {
+      whereClause.date = {
+        [Op.gte]: invoiceStartDate,
+      };
+    }
+
+    if (invoiceEndDate) {
+      whereClause.date = {
+        ...whereClause.date,
+        [Op.lte]: invoiceEndDate,
+      };
     }
 
     const invoices = await DrInvoice.findAll({
@@ -39,6 +95,9 @@ router.get("/", async (req, res) => {
             Customer,
             DrDiscountModel,
           ],
+          ...(Object.keys(idDeliveriesWhereClause).length > 0
+            ? { where: idDeliveriesWhereClause }
+            : {}),
         },
         {
           model: DrSgDelivery,
@@ -47,6 +106,9 @@ router.get("/", async (req, res) => {
             Customer,
             DrDiscountModel,
           ],
+          ...(Object.keys(sgDeliveriesWhereClause).length > 0
+            ? { where: sgDeliveriesWhereClause }
+            : {}),
         },
       ],
       where: whereClause,
