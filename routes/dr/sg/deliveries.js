@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { Op } = require("sequelize");
 const {
   sequelize: {
     models: {
@@ -12,16 +13,32 @@ const {
 } = require("../../../models/index");
 
 router.get("/", async (req, res, next) => {
-  const { unInvoiced } = req.query;
-
   try {
+    const { unInvoiced, CustomerId, startDate, endDate } = req.query;
+    const whereClause = {};
+
+    if (CustomerId) {
+      whereClause.CustomerId = CustomerId;
+    }
+
+    if (startDate) {
+      whereClause.date = {
+        [Op.gte]: startDate,
+      };
+    }
+
+    if (endDate) {
+      whereClause.date = {
+        ...whereClause.date,
+        [Op.lte]: endDate,
+      };
+    }
+
+    if (unInvoiced === "true") {
+      whereClause.DrInvoiceId = null;
+    }
     const deliveries = await DrSgDelivery.findAll({
-      where:
-        unInvoiced === "true"
-          ? {
-              DrInvoiceId: null,
-            }
-          : {},
+      where: whereClause,
       include: [DrSgDeliveryDetail, Customer, DrDiscountModel],
     });
     res.json({ data: deliveries });
