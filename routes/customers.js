@@ -22,8 +22,17 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
+    const { fullName } = req.query;
+    const whereClause = {};
+
+    if (fullName) {
+      whereClause.fullName = {
+        [Op.iLike]: `%${fullName}%`,
+      };
+    }
     const customers = await Customer.findAll({
       include: [{ model: Region }, { model: Invoice }, { model: DrInvoice }],
+      where: whereClause,
     });
     res.json({ data: customers });
   } catch (error) {
