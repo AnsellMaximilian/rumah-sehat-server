@@ -22,7 +22,7 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { fullName } = req.query;
+    const { fullName, phone, address, note } = req.query;
     const whereClause = {};
 
     if (fullName) {
@@ -30,6 +30,25 @@ router.get("/", async (req, res, next) => {
         [Op.iLike]: `%${fullName}%`,
       };
     }
+
+    if (address) {
+      whereClause.address = {
+        [Op.iLike]: `%${address}%`,
+      };
+    }
+
+    if (note) {
+      whereClause.note = {
+        [Op.iLike]: `%${note}%`,
+      };
+    }
+
+    if (phone) {
+      whereClause.phone = {
+        [Op.iLike]: `%${phone}%`,
+      };
+    }
+
     const customers = await Customer.findAll({
       include: [{ model: Region }, { model: Invoice }, { model: DrInvoice }],
       where: whereClause,
