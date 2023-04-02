@@ -31,7 +31,7 @@ const createPDFStream = async (templateName, data) => {
     });
 
     const pdfStream = await page.createPDFStream({
-      height: dynamicHeight + "px",
+      height: dynamicHeight + 200 + "px",
       printBackground: true,
     });
 

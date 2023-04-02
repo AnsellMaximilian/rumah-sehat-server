@@ -22,10 +22,13 @@ const modelDefiners = [
   require("./dr/invoice.model"),
   require("./dr/id/delivery.model"),
   require("./dr/sg/delivery.model"),
+  require("./dr/my/delivery.model"),
   require("./dr/id/item.model"),
   require("./dr/sg/item.model"),
+  require("./dr/my/item.model"),
   require("./dr/id/deliveryDetail.model"),
   require("./dr/sg/deliveryDetail.model"),
+  require("./dr/my/deliveryDetail.model"),
 ];
 
 const sequelize = new Sequelize(
@@ -63,11 +66,14 @@ const {
   // DR's
   DrIdDelivery,
   DrSgDelivery,
+  DrMyDelivery,
   DrIdItem,
   DrSgItem,
+  DrMyItem,
   DrDiscountModel,
   DrIdDeliveryDetail,
   DrSgDeliveryDetail,
+  DrMyDeliveryDetail,
   DrInvoice,
 } = sequelize.models;
 
@@ -188,9 +194,11 @@ Supplier.hasMany(PurchaseAdjustment);
 // DR's
 DrIdDelivery.belongsTo(DrDiscountModel);
 DrSgDelivery.belongsTo(DrDiscountModel);
+DrMyDelivery.belongsTo(DrDiscountModel);
 
 DrDiscountModel.hasMany(DrIdDelivery);
 DrDiscountModel.hasMany(DrSgDelivery);
+DrDiscountModel.hasMany(DrMyDelivery);
 
 DrIdDelivery.belongsTo(Customer, {
   foreignKey: {
@@ -198,6 +206,12 @@ DrIdDelivery.belongsTo(Customer, {
   },
 });
 DrSgDelivery.belongsTo(Customer, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrMyDelivery.belongsTo(Customer, {
   foreignKey: {
     allowNull: false,
   },
@@ -212,12 +226,15 @@ DrInvoice.belongsTo(Customer, {
 Customer.hasMany(DrInvoice);
 Customer.hasMany(DrIdDelivery);
 Customer.hasMany(DrSgDelivery);
+Customer.hasMany(DrMyDelivery);
 
 DrIdItem.hasMany(DrIdDeliveryDetail);
 DrSgItem.hasMany(DrSgDeliveryDetail);
+DrMyItem.hasMany(DrMyDeliveryDetail);
 
 DrIdDeliveryDetail.belongsTo(DrIdItem);
 DrSgDeliveryDetail.belongsTo(DrSgItem);
+DrMyDeliveryDetail.belongsTo(DrMyItem);
 
 DrIdDelivery.hasMany(DrIdDeliveryDetail, {
   onDelete: "CASCADE",
@@ -226,13 +243,21 @@ DrSgDelivery.hasMany(DrSgDeliveryDetail, {
   onDelete: "CASCADE",
 });
 
+DrMyDelivery.hasMany(DrMyDeliveryDetail, {
+  onDelete: "CASCADE",
+});
+
 DrIdDelivery.belongsTo(DrInvoice);
 DrSgDelivery.belongsTo(DrInvoice);
+DrMyDelivery.belongsTo(DrInvoice);
 
 DrInvoice.hasMany(DrIdDelivery, {
   onDelete: "CASCADE",
 });
 DrInvoice.hasMany(DrSgDelivery, {
+  onDelete: "CASCADE",
+});
+DrInvoice.hasMany(DrMyDelivery, {
   onDelete: "CASCADE",
 });
 

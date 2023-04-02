@@ -41,6 +41,12 @@ module.exports = (sequelize) => {
                 (total, delivery) => total + delivery.totalPriceRP,
                 0
               )
+            : 0) +
+          (this.DrMyDeliveries
+            ? this.DrMyDeliveries.reduce(
+                (total, delivery) => total + delivery.totalPriceRP,
+                0
+              )
             : 0)
         );
       },

@@ -14,4 +14,12 @@ const sgd = (num) =>
     minimumFractionDigits: 0,
   }).format(num);
 
-module.exports = { rupiah, sgd };
+const rm = (num) =>
+  new Intl.NumberFormat("ms-MY", {
+    style: "currency",
+    currency: "MYR",
+    currencySign: "accounting",
+    minimumFractionDigits: 0,
+  }).format(num);
+
+module.exports = { rupiah, sgd, rm };

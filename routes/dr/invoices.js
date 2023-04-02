@@ -6,12 +6,15 @@ const {
       DrInvoice,
       DrIdDelivery,
       DrSgDelivery,
+      DrMyDelivery,
       DrIdDeliveryDetail,
       DrSgDeliveryDetail,
+      DrMyDeliveryDetail,
       Customer,
       DrDiscountModel,
       DrIdItem,
       DrSgItem,
+      DrMyItem,
     },
   },
 } = require("../../models/index");
@@ -28,12 +31,15 @@ router.get("/", async (req, res) => {
       idDeliveriesEndDate,
       sgDeliveriesStartDate,
       sgDeliveriesEndDate,
+      myDeliveriesStartDate,
+      myDeliveriesEndDate,
       invoiceStartDate,
       invoiceEndDate,
     } = req.query;
     const whereClause = {};
     const idDeliveriesWhereClause = {};
     const sgDeliveriesWhereClause = {};
+    const myDeliveriesWhereClause = {};
 
     if (paid) {
       whereClause.paid = true;
@@ -69,6 +75,19 @@ router.get("/", async (req, res) => {
       sgDeliveriesWhereClause.date = {
         ...sgDeliveriesWhereClause.date,
         [Op.lte]: sgDeliveriesEndDate,
+      };
+    }
+
+    if (myDeliveriesStartDate) {
+      myDeliveriesWhereClause.date = {
+        [Op.gte]: myDeliveriesStartDate,
+      };
+    }
+
+    if (myDeliveriesEndDate) {
+      myDeliveriesWhereClause.date = {
+        ...myDeliveriesWhereClause.date,
+        [Op.lte]: myDeliveriesEndDate,
       };
     }
 
@@ -108,6 +127,17 @@ router.get("/", async (req, res) => {
           ],
           ...(Object.keys(sgDeliveriesWhereClause).length > 0
             ? { where: sgDeliveriesWhereClause }
+            : {}),
+        },
+        {
+          model: DrMyDelivery,
+          include: [
+            { model: DrMyDeliveryDetail, include: DrMyItem },
+            Customer,
+            DrDiscountModel,
+          ],
+          ...(Object.keys(myDeliveriesWhereClause).length > 0
+            ? { where: myDeliveriesWhereClause }
             : {}),
         },
       ],
@@ -199,6 +229,14 @@ router.get("/:id", async (req, res) => {
             { model: DrDiscountModel },
           ],
         },
+        {
+          model: DrMyDelivery,
+          include: [
+            { model: DrMyDeliveryDetail, include: DrMyItem },
+            Customer,
+            DrDiscountModel,
+          ],
+        },
       ],
     });
     if (!invoice) throw `Can't find item with id ${id}`;
@@ -232,6 +270,14 @@ router.get("/:id/print", async (req, res, next) => {
             { model: DrDiscountModel },
           ],
         },
+        {
+          model: DrMyDelivery,
+          include: [
+            { model: DrMyDeliveryDetail, include: DrMyItem },
+            Customer,
+            DrDiscountModel,
+          ],
+        },
       ],
     });
     if (!invoice) throw `Can't find item with id ${id}`;
@@ -245,6 +291,7 @@ router.get("/:id/print", async (req, res, next) => {
           ...invoiceJSON,
           hasIdDeliveries: invoiceJSON.DrIdDeliveries.length > 0,
           hasSgDeliveries: invoiceJSON.DrSgDeliveries.length > 0,
+          hasMyDeliveries: invoiceJSON.DrMyDeliveries.length > 0,
         },
       }
     );
@@ -295,6 +342,14 @@ router.patch("/:id/pay", async (req, res, next) => {
             { model: DrDiscountModel },
           ],
         },
+        {
+          model: DrMyDelivery,
+          include: [
+            { model: DrMyDeliveryDetail, include: DrMyItem },
+            Customer,
+            DrDiscountModel,
+          ],
+        },
       ],
     });
 
@@ -332,6 +387,14 @@ router.patch("/:id", async (req, res, next) => {
             { model: DrSgDeliveryDetail, include: DrSgItem },
             { model: Customer },
             { model: DrDiscountModel },
+          ],
+        },
+        {
+          model: DrMyDelivery,
+          include: [
+            { model: DrMyDeliveryDetail, include: DrMyItem },
+            Customer,
+            DrDiscountModel,
           ],
         },
       ],

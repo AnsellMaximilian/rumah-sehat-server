@@ -1,7 +1,7 @@
 const HBS = require("handlebars");
 const fs = require("fs");
 const path = require("path");
-const { rupiah, sgd } = require("./formatCurrency");
+const { rupiah, sgd, rm } = require("./formatCurrency");
 
 const resetPartial = HBS.compile(
   fs.readFileSync(
@@ -43,6 +43,10 @@ HBS.registerHelper("formatRP", function (num) {
 
 HBS.registerHelper("formatSGD", function (num) {
   return sgd(num);
+});
+
+HBS.registerHelper("formatRM", function (num) {
+  return rm(num);
 });
 
 HBS.registerHelper("parseFloat", function (num) {
