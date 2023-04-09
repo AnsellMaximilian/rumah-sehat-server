@@ -196,6 +196,51 @@ router.get("/profits", async (req, res, next) => {
   }
 });
 
+router.get("/purchase-compare", async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const [purchases] = await sequelize.query(
+      `
+      SELECT 
+          "Pr"."id" as "productId",
+          "Pr"."name" as "productName",
+          "Pr"."cost" as "buyPrice",
+          SUM("PD"."qty") as "totalPurchased",
+          SUM("PD"."price" * "PD"."qty") as "totalCost"
+      FROM "Purchases" as "P"
+      INNER JOIN "PurchaseDetails" as "PD" on "P"."id" = "PD"."PurchaseId"
+      INNER JOIN "Products" as "Pr" on "Pr"."id" = "PD"."ProductId"
+      WHERE "P"."date" >= '${startDate}'
+      AND "P"."date" <= '${endDate}'
+      GROUP BY "Pr"."id"
+      ORDER BY "Pr"."name"
+      `
+    );
+
+    const [sales] = await sequelize.query(
+      `
+      SELECT 
+          "Pr"."id" as "productId",
+          "Pr"."name" as "productName",
+          "Pr"."price" as "salePrice",
+          SUM("DD"."qty") as "totalSold",
+          SUM("DD"."price" * "DD"."qty") as "totalSales"
+      FROM "Deliveries" as "D"
+      INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
+      INNER JOIN "Products" as "Pr" on "Pr"."id" = "DD"."ProductId"
+      WHERE "D"."date" >= '${startDate}'
+      AND "D"."date" <= '${endDate}'
+      GROUP BY "Pr"."id"
+      ORDER BY "Pr"."name"
+      `
+    );
+    res.json({ data: { sales, purchases } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/print", async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
