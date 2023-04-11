@@ -1,5 +1,6 @@
 const { google } = require("googleapis");
 const path = require("path");
+const moment = require("moment");
 
 const credentialsPath = path.join(__dirname, "..", "sheets_secret.json");
 
@@ -22,6 +23,16 @@ async function writeDataToSheet(values) {
     valueInputOption: "RAW",
     resource: {
       values,
+    },
+  });
+
+  // Update metadata
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `metadata!A2:A2`,
+    valueInputOption: "RAW",
+    resource: {
+      values: [[moment().format("YYYY-MM-DD")]],
     },
   });
 }
