@@ -7,7 +7,7 @@ const path = require("path");
 const {
   sequelize,
   sequelize: {
-    models: { Delivery, DeliveryDetail, Customer, Product },
+    models: { Delivery, DeliveryDetail, Customer, Product, Supplier },
   },
 } = require("../../models/index");
 const moment = require("moment");
@@ -18,7 +18,7 @@ router.get("/export-to-sheets", async (req, res, next) => {
     const deliveryDetails = await DeliveryDetail.findAll({
       include: [
         { model: Delivery, include: [{ model: Customer }] },
-        { model: Product },
+        { model: Product, include: [{ model: Supplier }] },
       ],
     });
 
@@ -26,12 +26,13 @@ router.get("/export-to-sheets", async (req, res, next) => {
       return [
         detail.id,
         detail.Delivery.date,
+        detail.Delivery.Customer.fullName,
+        detail.Product.Supplier.name,
         detail.ProductId,
         detail.Product.name,
-        detail.Delivery.Customer.fullName,
-        parseFloat(detail.qty),
         detail.price,
         detail.cost,
+        parseFloat(detail.qty),
       ];
     });
 

@@ -49,7 +49,7 @@ async function readSheet() {
 
   return await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${process.env.SHEET_NAME}!A2:H`,
+    range: `${process.env.SHEET_NAME}!A2:I`,
   });
 }
 
