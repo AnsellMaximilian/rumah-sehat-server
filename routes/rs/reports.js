@@ -206,14 +206,16 @@ router.get("/purchase-compare", async (req, res, next) => {
           "Pr"."id" as "productId",
           "Pr"."name" as "productName",
           "Pr"."cost" as "buyPrice",
+          "S"."name" as "supplierName",
           SUM("PD"."qty") as "totalPurchased",
           SUM("PD"."price" * "PD"."qty") as "totalCost"
       FROM "Purchases" as "P"
       INNER JOIN "PurchaseDetails" as "PD" on "P"."id" = "PD"."PurchaseId"
       INNER JOIN "Products" as "Pr" on "Pr"."id" = "PD"."ProductId"
+      INNER JOIN "Suppliers" as "S" on "S"."id" = "Pr"."SupplierId"
       WHERE "P"."date" >= '${startDate}'
       AND "P"."date" <= '${endDate}'
-      GROUP BY "Pr"."id"
+      GROUP BY "Pr"."id", "S"."name"
       ORDER BY "Pr"."name"
       `
     );
