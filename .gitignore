@@ -1,3 +1,4 @@
 node_modules/
 .env
 pdfs/
+sheets_secret.json

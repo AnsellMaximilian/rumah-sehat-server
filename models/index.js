@@ -109,6 +109,13 @@ Delivery.hasMany(DeliveryDetail, {
 Product.hasMany(DeliveryDetail, {
   onDelete: "SET NULL",
 });
+
+DeliveryDetail.belongsTo(Delivery, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
 DeliveryDetail.belongsTo(Product, {
   foreignKey: {
     allowNull: false,
