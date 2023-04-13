@@ -1,5 +1,7 @@
 const router = require("express").Router();
 const path = require("path");
+const fs = require("fs");
+const moment = require("moment");
 const {
   sequelize: {
     models: {
@@ -18,7 +20,7 @@ const {
     },
   },
 } = require("../../models/index");
-const { createPDFStream } = require("../../helpers/pdfGeneration");
+const { createPDFStream, savePDF } = require("../../helpers/pdfGeneration");
 const { Op } = require("sequelize");
 
 router.get("/", async (req, res) => {
@@ -150,44 +152,118 @@ router.get("/", async (req, res) => {
   }
 });
 
-// router.post("/", async (req, res) => {
-//   try {
-//     const { date, note, DrIdDeliveryIds, DrSgDeliveryIds, CustomerId } =
-//       req.body;
+router.post("/bulk-print", async (req, res, next) => {
+  try {
+    const {
+      fileNamePrefix,
+      invoiceIds,
+      setDraftsPending,
+      setInvoicesDateToToday,
+    } = req.body;
 
-//     if (DrIdDeliveryIds.length === 0 && DrSgDeliveryIds.length === 0)
-//       throw "Pick atleast 1 delivery to invoice.";
+    if (setInvoicesDateToToday) {
+      await DrInvoice.update(
+        { date: moment().format("YYYY-MM-DD") },
+        {
+          where: {
+            id: invoiceIds,
+          },
+        }
+      );
+    }
 
-//     const newInvoice = DrInvoice.build({
-//       date,
-//       note,
-//       CustomerId,
-//     });
-//     await newInvoice.save();
+    const invoices = await DrInvoice.findAll({
+      include: [
+        { model: Customer },
+        {
+          model: DrIdDelivery,
+          include: [
+            { model: DrIdDeliveryDetail, include: DrIdItem },
+            Customer,
+            DrDiscountModel,
+          ],
+        },
+        {
+          model: DrSgDelivery,
+          include: [
+            { model: DrSgDeliveryDetail, include: DrSgItem },
+            Customer,
+            DrDiscountModel,
+          ],
+        },
+        {
+          model: DrMyDelivery,
+          include: [
+            { model: DrMyDeliveryDetail, include: DrMyItem },
+            Customer,
+            DrDiscountModel,
+          ],
+        },
+      ],
+      where: {
+        id: invoiceIds,
+      },
+    });
 
-//     const idDeliveries = await DrIdDelivery.findAll({
-//       where: {
-//         id: DrIdDeliveryIds,
-//         DrInvoiceId: null,
-//       },
-//     });
+    const directoryPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "pdfs",
+      "dr",
+      "invoices",
+      `${moment().format("DD-MM-YYYY_hh-mm-ss")}__${fileNamePrefix}`
+    );
 
-//     await newInvoice.addDrIdDeliveries(idDeliveries);
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, {
+        recursive: true,
+      });
+    }
 
-//     const sgDeliveries = await DrSgDelivery.findAll({
-//       where: {
-//         id: DrSgDeliveryIds,
-//         DrInvoiceId: null,
-//       },
-//     });
+    const successes = [];
+    const fails = [];
 
-//     await newInvoice.addDrSgDeliveries(sgDeliveries);
+    for (const invoice of invoices) {
+      try {
+        const invoiceJSON = invoice.toJSON();
+        await savePDF(
+          path.join(
+            __dirname,
+            "..",
+            "..",
+            "templates",
+            "dr-secret-invoice.hbs"
+          ),
+          {
+            invoice: {
+              ...invoiceJSON,
+              hasIdDeliveries: invoiceJSON.DrIdDeliveries.length > 0,
+              hasSgDeliveries: invoiceJSON.DrSgDeliveries.length > 0,
+              hasMyDeliveries: invoiceJSON.DrMyDeliveries.length > 0,
+            },
+          },
+          path.join(
+            directoryPath,
+            `INVOICE-DR ${invoice.customerFullName.replace(
+              /[^a-z0-9]/gi,
+              "_"
+            )}-${invoice.Customer.id} NO-${invoice.id} ${invoice.date}.pdf`
+          )
+        );
+        successes.push(invoice);
+      } catch (error) {
+        fails.push(invoice);
+      }
+    }
 
-//     res.json({ message: "Success", data: newInvoice });
-//   } catch (error) {
-//     res.json({ error });
-//   }
-// });
+    res.json({ message: "Success", data: { successes, fails } });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.post("/", async (req, res, next) => {
   try {
     const { date, note, CustomerId } = req.body;
