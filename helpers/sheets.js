@@ -7,7 +7,7 @@ const credentialsPath = path.join(__dirname, "..", "sheets_secret.json");
 // const credentials = require(`./${process.env.SECRET_GOOGLE_KEY_NAME}`);
 const spreadsheetId = process.env.SPREADSHEET_ID;
 
-async function writeDataToSheet(values) {
+async function writeDataToSheet(values, sheetName, range) {
   const auth = new google.auth.GoogleAuth({
     // credentials,
     keyFile: credentialsPath,
@@ -19,20 +19,10 @@ async function writeDataToSheet(values) {
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${process.env.SHEET_NAME}!A2`,
+    range: `${sheetName}!${range}`,
     valueInputOption: "RAW",
     resource: {
       values,
-    },
-  });
-
-  // Update metadata
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `metadata!A2:A2`,
-    valueInputOption: "RAW",
-    resource: {
-      values: [[moment().format("YYYY-MM-DD")]],
     },
   });
 }
