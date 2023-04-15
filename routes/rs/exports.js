@@ -26,7 +26,7 @@ router.get("/export-to-sheets", async (req, res, next) => {
     });
 
     const customersData = customers.map((cus) => [cus.id, cus.fullName]);
-    const suppliersData = suppliers.map((sup) => [sup.id, sup.fullName]);
+    const suppliersData = suppliers.map((sup) => [sup.id, sup.name]);
     const productsData = products.map((prod) => [
       prod.id,
       prod.name,
