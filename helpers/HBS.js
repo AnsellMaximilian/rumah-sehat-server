@@ -31,9 +31,17 @@ const separatorPartial = HBS.compile(
   )
 );
 
+const productListStylePartial = HBS.compile(
+  fs.readFileSync(
+    path.join(__dirname, "..", "templates", "partials", "productListStyle.hbs"),
+    "utf-8"
+  )
+);
+
 HBS.registerPartial("separator", separatorPartial);
 HBS.registerPartial("reportStyle", reportStylePartial);
 HBS.registerPartial("invoiceStyle", invoiceStylePartial);
+HBS.registerPartial("productListStyle", productListStylePartial);
 HBS.registerPartial("reset", resetPartial);
 
 // HELPERS

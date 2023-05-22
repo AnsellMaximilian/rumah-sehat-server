@@ -1,0 +1,68 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>A simple, clean, and responsive HTML invoice template</title>
+    {{> reset}}
+    {{> productListStyle}}
+
+  </head>
+
+  <body>
+   <main>
+      <header id="header">
+        <div id="header-top">
+          <div id="header-top-title">
+            <h1>Product List</h1>
+            <h2>Rumah Sehat</h2>
+          </div>
+          {{#if supplier}}
+             <div id="header-top-number">{{supplier.name}}</div>
+          {{/if}}
+        </div>
+        <div id="header-info">
+          <div>
+            <div class="value-display">
+              <div class="label">DATE PRINTED</div>
+              <div class="value">{{datePrinted}}</div>
+            </div>
+
+          </div>
+        </div>
+      </header>
+
+      <article class="dr-section">
+        <article>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                {{#if includeCost}}
+                <th>Cost</th>
+                {{/if}}
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+            {{#each products}}
+
+            <tr>
+                <td>{{this.name}}</td>
+                {{#if ../includeCost}}
+                <td>{{formatRP this.cost}}</td>
+                {{/if}}
+                <td>{{formatRP this.price}}</td>
+            </tr>
+
+            {{/each}}
+              
+            </tbody>
+            <tfoot>
+              
+            </tfoot>
+          </table>
+        </article>
+      </article>
+
+    </main>
+  </body>
+</html>

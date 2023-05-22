@@ -1,5 +1,7 @@
 const router = require("express").Router();
 const { Op } = require("sequelize");
+const path = require("path");
+const moment = require("moment");
 const {
   sequelize: {
     models: {
@@ -11,6 +13,10 @@ const {
     },
   },
 } = require("../../models/index");
+const {
+  createPDFStream,
+  generateHTML,
+} = require("../../helpers/pdfGeneration");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -37,6 +43,53 @@ router.get("/", async (req, res, next) => {
       where: whereClause,
     });
     res.json({ data: products });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/print", async (req, res, next) => {
+  try {
+    const { SupplierId, exclude, includeCost } = req.query;
+
+    const whereClause = {};
+    let printTitle = "Product List";
+    let supplier;
+    if (SupplierId) {
+      whereClause.SupplierId = SupplierId;
+      printTitle = "Cisarua Product List";
+      supplier = await Supplier.findByPk(SupplierId);
+    }
+
+    const products = await Product.findAll({
+      include: [ProductCategory, Supplier],
+      order: [["name", "ASC"]],
+      where: whereClause,
+      attributes: {
+        exclude: exclude ? exclude : [],
+      },
+    });
+
+    const data = {
+      products: products.map((product) => product.toJSON()),
+      supplier: supplier ? supplier.toJSON() : null,
+      includeCost: !!includeCost,
+      datePrinted: moment().format("DD MMMM YYYY"),
+    };
+
+    const pdfStream = await createPDFStream(
+      path.join(__dirname, "..", "..", "templates", "product-list.hbs"),
+      data
+    );
+
+    pdfStream.pipe(res);
+
+    // const html = generateHTML(
+    //   path.join(__dirname, "..", "..", "templates", "product-list.hbs"),
+
+    //   data
+    // );
+    // res.end(html);
   } catch (error) {
     next(error);
   }
