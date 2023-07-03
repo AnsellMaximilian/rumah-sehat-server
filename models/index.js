@@ -3,6 +3,9 @@ const { Sequelize } = require("sequelize");
 const modelDefiners = [
   require("./customer.model"),
   require("./region.model"),
+  require("./expense.model"),
+  require("./expenseDetail.model"),
+  require("./expenditure.model"),
 
   // Rumah Sehat
   require("./rs/product.model"),
@@ -62,7 +65,9 @@ const {
   PurchaseDetail,
   PurchaseAdjustment,
   Adjustment,
-
+  Expense,
+  Expenditure,
+  ExpenseDetail,
   // DR's
   DrIdDelivery,
   DrSgDelivery,
@@ -266,6 +271,26 @@ DrInvoice.hasMany(DrSgDelivery, {
 });
 DrInvoice.hasMany(DrMyDelivery, {
   onDelete: "CASCADE",
+});
+
+// EXPENSES
+Expenditure.hasMany(ExpenseDetail, {
+  onDelete: "CASCADE",
+});
+Expense.hasMany(ExpenseDetail, {
+  onDelete: "SET NULL",
+});
+
+ExpenseDetail.belongsTo(Expenditure, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+ExpenseDetail.belongsTo(Expense, {
+  foreignKey: {
+    allowNull: false,
+  },
 });
 
 sequelize
