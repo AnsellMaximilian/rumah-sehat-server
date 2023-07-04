@@ -13,5 +13,9 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   });
 };

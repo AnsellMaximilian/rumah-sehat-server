@@ -131,8 +131,7 @@ router.post("/", async (req, res, next) => {
 
 router.post("/:id/draw", async (req, res, next) => {
   try {
-    const { amount, date } = req.body;
-    console.log(date);
+    const { amount, date, description } = req.body;
 
     const { id } = req.params;
 
@@ -140,6 +139,7 @@ router.post("/:id/draw", async (req, res, next) => {
       amount,
       date,
       ProductId: id,
+      description,
     });
     await newDraw.save();
 
