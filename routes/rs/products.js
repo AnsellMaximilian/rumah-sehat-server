@@ -10,14 +10,17 @@ const {
       Supplier,
       PurchaseDetail,
       DeliveryDetail,
+      Purchase,
+      Delivery,
+      Draw,
     },
   },
+  sequelize,
 } = require("../../models/index");
 const {
   createPDFStream,
   generateHTML,
 } = require("../../helpers/pdfGeneration");
-
 router.get("/", async (req, res, next) => {
   try {
     const { name, SupplierId, ProductCategoryId } = req.query;
@@ -105,6 +108,7 @@ router.post("/", async (req, res, next) => {
       SupplierId,
       ProductCategoryId,
       unit,
+      keepStockSince,
     } = req.body;
 
     const newProduct = Product.build({
@@ -115,10 +119,163 @@ router.post("/", async (req, res, next) => {
       SupplierId,
       unit,
       ProductCategoryId,
+      keepStockSince,
     });
     await newProduct.save();
 
     res.json({ message: "Success", data: newProduct });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:id/draw", async (req, res, next) => {
+  try {
+    const { amount, date } = req.body;
+    console.log(date);
+
+    const { id } = req.params;
+
+    const newDraw = Draw.build({
+      amount,
+      date,
+      ProductId: id,
+    });
+    await newDraw.save();
+
+    res.json({ message: "Success", data: newDraw });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:id/stock", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    let stock = 0;
+    const product = await Product.findByPk(id, {
+      include: [PurchaseDetail, DeliveryDetail],
+    });
+    if (!product) throw `Can't find product with id ${id}`;
+    if (product.keepStockSince !== null) {
+      const incoming = await Purchase.findAll({
+        where: {
+          date: {
+            [Op.gte]: product.keepStockSince,
+          },
+        },
+        include: [
+          {
+            model: PurchaseDetail,
+            where: {
+              ProductId: product.id,
+            },
+          },
+        ],
+      });
+      const outgoing = await Delivery.findAll({
+        where: {
+          date: {
+            [Op.gte]: product.keepStockSince,
+          },
+        },
+        include: [
+          {
+            model: DeliveryDetail,
+            where: {
+              ProductId: product.id,
+            },
+          },
+        ],
+      });
+
+      const draws = await Draw.findAll({
+        where: {
+          date: {
+            [Op.gte]: product.keepStockSince,
+          },
+          ProductId: product.id,
+        },
+      });
+      const incomingNumber = incoming.reduce(
+        (sum, inc) =>
+          sum +
+          inc.PurchaseDetails.reduce((sum, pd) => sum + parseInt(pd.qty), 0),
+        0
+      );
+
+      const outgoingNumber = outgoing.reduce(
+        (sum, out) =>
+          sum +
+          out.DeliveryDetails.reduce((sum, dd) => sum + parseInt(dd.qty), 0),
+        0
+      );
+
+      const drawNumber = draws.reduce(
+        (sum, draw) => sum + parseInt(draw.amount),
+        0
+      );
+
+      stock = incomingNumber - outgoingNumber - drawNumber;
+    }
+
+    res.json({ data: stock });
+  } catch (error) {
+    next(error);
+  }
+});
+router.get("/stock-report", async (req, res, next) => {
+  try {
+    const [stock] = await sequelize.query(
+      `
+      SELECT 
+        "p"."name",
+        "p"."id",
+        COALESCE(SUM("pd"."amount"), 0) as "totalIn",
+        COALESCE(SUM("dd"."amount"), 0) as "totalOut",
+        COALESCE(SUM("dr"."amount"), 0) as "totalDrawn",
+        (COALESCE(SUM("pd"."amount"), 0) - COALESCE(SUM("dd"."amount"), 0) - COALESCE(SUM("dr"."amount"), 0)) as "stock"
+      FROM "Products" as "p"
+      LEFT JOIN
+        (
+          SELECT 
+            "Products"."id" as "productId", sum("PurchaseDetails"."qty") as "amount"
+          FROM "PurchaseDetails"
+          inner join "Purchases" on "Purchases"."id" = "PurchaseDetails"."PurchaseId"
+          inner join "Products" on "PurchaseDetails"."ProductId" = "Products"."id"
+          Where "Products"."keepStockSince" is not null and "Purchases"."date" >= "Products"."keepStockSince"
+          group by "productId"
+        ) as "pd"
+        ON "pd"."productId" = "p"."id"
+      LEFT JOIN
+        (
+          SELECT 
+            "Products"."id" as "productId", sum("DeliveryDetails"."qty") as "amount"
+          FROM "DeliveryDetails"
+          inner join "Deliveries" on "Deliveries"."id" = "DeliveryDetails"."DeliveryId"
+          inner join "Products" on "DeliveryDetails"."ProductId" = "Products"."id"
+          Where "Products"."keepStockSince" is not null and "Deliveries"."date" >= "Products"."keepStockSince"
+          group by "productId"
+        ) as "dd"
+        ON "dd"."productId" = "p"."id"
+      LEFT JOIN
+        (
+          SELECT 
+            "Products"."id" as "productId", sum("Draws"."amount") as "amount"
+          FROM "Draws"
+          inner join "Products" on "Draws"."ProductId" = "Products"."id"
+          Where "Products"."keepStockSince" is not null and "Draws"."date" >= "Products"."keepStockSince"
+          group by "productId"
+        ) as "dr"
+        ON "dr"."productId" = "p"."id"
+      WHERE "p"."keepStockSince" is not null
+
+      GROUP BY
+        "p"."name", "p"."id"
+      `
+    );
+
+    res.json({ data: stock });
   } catch (error) {
     next(error);
   }
@@ -147,13 +304,24 @@ router.patch("/:id", async (req, res, next) => {
       SupplierId,
       ProductCategoryId,
       unit,
+
+      keepStockSince,
     } = req.body;
     const { id } = req.params;
 
     const product = await Product.findByPk(id);
 
     await product.update(
-      { name, price, resellerPrice, cost, SupplierId, ProductCategoryId, unit },
+      {
+        name,
+        price,
+        resellerPrice,
+        cost,
+        SupplierId,
+        ProductCategoryId,
+        unit,
+        keepStockSince,
+      },
       {
         where: {
           id: id,

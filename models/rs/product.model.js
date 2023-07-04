@@ -36,5 +36,10 @@ module.exports = (sequelize) => {
         len: 1,
       },
     },
+    keepStockSince: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      defaultValue: null,
+    },
   });
 };
