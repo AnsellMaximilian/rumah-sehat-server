@@ -269,9 +269,10 @@ router.get("/stock-report", async (req, res, next) => {
         ) as "dr"
         ON "dr"."productId" = "p"."id"
       WHERE "p"."keepStockSince" is not null
-
       GROUP BY
         "p"."name", "p"."id"
+      ORDER BY
+        "p"."name" ASC
       `
     );
 

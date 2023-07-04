@@ -227,6 +227,17 @@ Purchase.hasMany(PurchaseAdjustment, {
 });
 Supplier.hasMany(PurchaseAdjustment);
 
+//
+
+PurchaseAdjustment.belongsTo(PurchaseInvoice, {
+  as: "AdjustedPurchaseInvoice",
+});
+PurchaseInvoice.hasMany(PurchaseAdjustment, {
+  onDelete: "CASCADE",
+  as: "PurchaseInvoiceAdjustments",
+  foreignKey: "AdjustedPurchaseInvoiceId",
+});
+
 // DR's
 DrIdDelivery.belongsTo(DrDiscountModel);
 DrSgDelivery.belongsTo(DrDiscountModel);
