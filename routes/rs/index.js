@@ -9,6 +9,7 @@ router.use("/invoices", require("./invoices"));
 router.use("/purchases", require("./purchases"));
 router.use("/adjustments", require("./adjustments"));
 router.use("/purchase-adjustments", require("./purchaseAdjustments"));
+router.use("/purchase-invoices", require("./purchaseInvoices"));
 router.use("/reports", require("./reports"));
 router.use("/exports", require("./exports"));
 router.use("/seed", require("./seed"));

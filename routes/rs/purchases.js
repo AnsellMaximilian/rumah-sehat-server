@@ -1,7 +1,15 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Purchase, PurchaseDetail, Product, Supplier, Delivery, Customer },
+    models: {
+      Purchase,
+      PurchaseDetail,
+      Product,
+      Supplier,
+      Delivery,
+      Customer,
+      PurchaseInvoice,
+    },
     query,
   },
   sequelize,
@@ -70,11 +78,19 @@ const getPurchaseTotals = async (startDate, endDate, unpaidFilter) => {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { SupplierId } = req.query;
+    const { SupplierId, invoiced } = req.query;
     const whereClause = {};
 
     if (SupplierId) {
       whereClause.SupplierId = SupplierId;
+    }
+
+    if (invoiced === "true") {
+      whereClause.PurchaeInvoiceId = {
+        [Op.not]: null,
+      };
+    } else if (invoiced === "false") {
+      whereClause.PurchaseInvoiceId = null;
     }
     const purchases = await Purchase.findAll({
       include: [PurchaseDetail, Supplier, Delivery],
@@ -128,7 +144,14 @@ router.post("/pay", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { date, cost, note, purchaseDetails, SupplierId } = req.body;
+    const {
+      date,
+      cost,
+      note,
+      purchaseDetails,
+      SupplierId,
+      makePurchaseInvoice,
+    } = req.body;
     const newPurchase = Purchase.build({
       date,
       cost,
@@ -146,6 +169,17 @@ router.post("/", async (req, res, next) => {
         ProductId,
         CustomerId,
       });
+    }
+
+    if (makePurchaseInvoice) {
+      const newPurchaseInvoice = PurchaseInvoice.build({
+        date,
+        note,
+        SupplierId,
+        paid: false,
+      });
+      await newPurchaseInvoice.save();
+      await newPurchaseInvoice.addPurchase(newPurchase);
     }
 
     res.json({ message: "Success", data: newPurchase });

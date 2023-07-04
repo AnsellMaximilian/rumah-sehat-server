@@ -17,6 +17,7 @@ const modelDefiners = [
   require("./rs/deliveryDetail.model"),
   require("./rs/purchase.model"),
   require("./rs/purchaseDetail.model"),
+  require("./rs/purchaseInvoice.model"),
   require("./rs/invoice.model"),
   require("./rs/adjustment.model"),
   require("./rs/purchaseAdjustment.model"),
@@ -65,6 +66,7 @@ const {
   Invoice,
   Purchase,
   PurchaseDetail,
+  PurchaseInvoice,
   PurchaseAdjustment,
   Adjustment,
   Expense,
@@ -155,6 +157,26 @@ Purchase.belongsTo(Supplier, {
   foreignKey: {
     allowNull: false,
   },
+});
+
+Purchase.belongsTo(PurchaseInvoice, {
+  foreignKey: {
+    allowNull: true,
+  },
+});
+
+PurchaseInvoice.hasMany(Purchase, {
+  onDelete: "SET NULL",
+});
+
+Supplier.hasMany(PurchaseInvoice, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+PurchaseInvoice.belongsTo(Supplier, {
+  onDelete: "CASCADE",
 });
 
 Customer.hasMany(PurchaseDetail);
