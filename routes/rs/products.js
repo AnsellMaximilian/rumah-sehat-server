@@ -13,6 +13,7 @@ const {
       Purchase,
       Delivery,
       Draw,
+      Customer,
     },
   },
   sequelize,
@@ -256,6 +257,8 @@ router.get("/:id/history", async (req, res, next) => {
         include: [
           {
             model: Delivery,
+            include: Customer,
+
             where: {
               date: {
                 [Op.gte]: product.keepStockSince,
