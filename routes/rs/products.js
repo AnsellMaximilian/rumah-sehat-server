@@ -224,6 +224,64 @@ router.get("/:id/stock", async (req, res, next) => {
     next(error);
   }
 });
+
+router.get("/:id/history", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    let stock = 0;
+    const product = await Product.findByPk(id, {
+      // include: [PurchaseDetail, DeliveryDetail, Draw],
+    });
+    if (!product) throw `Can't find product with id ${id}`;
+    if (product.keepStockSince !== null) {
+      const purchaseDetails = await PurchaseDetail.findAll({
+        where: {
+          ProductId: product.id,
+        },
+        include: [
+          {
+            model: Purchase,
+            where: {
+              date: {
+                [Op.gte]: product.keepStockSince,
+              },
+            },
+          },
+        ],
+      });
+      const deliveryDetails = await DeliveryDetail.findAll({
+        where: {
+          ProductId: product.id,
+        },
+        include: [
+          {
+            model: Delivery,
+            where: {
+              date: {
+                [Op.gte]: product.keepStockSince,
+              },
+            },
+          },
+        ],
+      });
+
+      const draws = await Draw.findAll({
+        where: {
+          date: {
+            [Op.gte]: product.keepStockSince,
+          },
+          ProductId: product.id,
+        },
+      });
+      return res.json({ data: { purchaseDetails, deliveryDetails, draws } });
+    }
+
+    res.json({ data: 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/stock-report", async (req, res, next) => {
   try {
     const [stock] = await sequelize.query(
