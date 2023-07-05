@@ -26,6 +26,17 @@ module.exports = (sequelize) => {
         return this.Customer?.fullName;
       },
     },
+    hasHemat: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        if (this.DrIdDeliveries) {
+          return !!this.DrIdDeliveries?.some((d) =>
+            d.DrIdDeliveryDetails?.some((dd) => dd.free)
+          );
+        }
+        return false;
+      },
+    },
     totalPriceRP: {
       type: DataTypes.VIRTUAL,
       get() {

@@ -35,10 +35,37 @@ module.exports = (sequelize) => {
         return this.priceRP * this.qty;
       },
     },
+    totalCountedPriceRP: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        if (this.free) return 0;
+        return this.totalPriceRP;
+      },
+    },
+
     totalPoints: {
       type: DataTypes.VIRTUAL,
       get() {
         return this.points * this.qty;
+      },
+    },
+    totalCountedPoints: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        if (this.free) return 0;
+
+        return this.points * this.qty;
+      },
+    },
+    free: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    isCharged: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return !this.free;
       },
     },
   });

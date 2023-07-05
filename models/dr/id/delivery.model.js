@@ -19,7 +19,7 @@ module.exports = (sequelize) => {
       get() {
         return this.DrIdDeliveryDetails
           ? this.DrIdDeliveryDetails.reduce(
-              (total, detail) => total + detail.totalPriceRP,
+              (total, detail) => total + detail.totalCountedPriceRP,
               0
             )
           : 0;
@@ -30,7 +30,7 @@ module.exports = (sequelize) => {
       get() {
         return this.DrIdDeliveryDetails
           ? this.DrIdDeliveryDetails.reduce(
-              (total, detail) => total + detail.totalPoints,
+              (total, detail) => total + detail.totalCountedPoints,
               0
             )
           : 0;
@@ -61,6 +61,22 @@ module.exports = (sequelize) => {
       type: DataTypes.VIRTUAL,
       get() {
         return this.subtotalPriceRP + this.cost - this.totalDiscount;
+      },
+    },
+    getChargedDetails: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.DrIdDeliveryDetails
+          ? this.DrIdDeliveryDetails.filter((dd) => !dd.free)
+          : [];
+      },
+    },
+    getFreeDetails: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.DrIdDeliveryDetails
+          ? this.DrIdDeliveryDetails.filter((dd) => dd.free)
+          : [];
       },
     },
   });

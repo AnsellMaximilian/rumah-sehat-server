@@ -359,6 +359,7 @@ router.get("/:id/print", async (req, res, next) => {
     if (!invoice) throw `Can't find item with id ${id}`;
 
     const invoiceJSON = invoice.toJSON();
+    console.log(invoiceJSON.DrIdDeliveries.getFreeDetails);
 
     const pdfStream = await createPDFStream(
       path.join(__dirname, "..", "..", "templates", "dr-secret-invoice.hbs"),

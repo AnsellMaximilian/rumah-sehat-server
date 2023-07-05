@@ -69,7 +69,7 @@ router.post("/", async (req, res, next) => {
     await newDelivery.save();
 
     for (const deliveryDetail of deliveryDetails) {
-      const { priceRP, qty, points, DrIdItemId } = deliveryDetail;
+      const { priceRP, qty, points, DrIdItemId, free } = deliveryDetail;
       console.log({ priceRP, qty, points, DrIdItemId });
 
       await newDelivery.createDrIdDeliveryDetail({
@@ -77,6 +77,7 @@ router.post("/", async (req, res, next) => {
         qty,
         points,
         DrIdItemId,
+        free,
       });
     }
 
@@ -118,13 +119,14 @@ router.patch("/:id", async (req, res, next) => {
 
     // replace delivery details
     for (const deliveryDetail of deliveryDetails) {
-      const { priceRP, qty, points, DrIdItemId } = deliveryDetail;
+      const { priceRP, qty, points, DrIdItemId, free } = deliveryDetail;
 
       await delivery.createDrIdDeliveryDetail({
         priceRP,
         qty,
         points,
         DrIdItemId,
+        free,
       });
     }
 
