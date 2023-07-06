@@ -7,10 +7,22 @@ const path = require("path");
 const {
   sequelize,
   sequelize: {
-    models: { Product, ProductCategory, Supplier },
+    models: {
+      Product,
+      ProductCategory,
+      Supplier,
+      DeliveryDetail,
+      Delivery,
+      Purchase,
+      PurchaseDetail,
+      Expenditure,
+      ExpenseDetail,
+      Expense,
+    },
   },
 } = require("../../models/index");
 const moment = require("moment");
+const { Op } = require("sequelize");
 
 const getProfits = async (startDate, endDate) => {
   const [totals] = await sequelize.query(
@@ -306,10 +318,6 @@ router.get("/print", async (req, res, next) => {
       products,
     };
 
-    console.log(
-      data.purchaseTotals.find((pt) => pt.supplierName === "Cisarua")
-    );
-
     const pdfStream = await createPDFStream(
       path.join(__dirname, "..", "..", "templates", "rs-report.hbs"),
       data
@@ -387,6 +395,100 @@ router.get("/products", async (req, res, next) => {
     );
 
     res.json({ data: { products, totals } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/full-report", async (req, res, next) => {
+  try {
+    let { startDate, endDate } = req.query;
+    if (!startDate) startDate = moment().format("YYYY-MM-DD");
+    if (!endDate) endDate = moment().format("YYYY-MM-DD");
+    const [sales] = await sequelize.query(
+      `
+      SELECT
+        "pr"."id",
+        "pr"."name",
+        "dd"."price" as "salePrice",
+        SUM("dd"."qty") as "totalQty",
+        SUM("dd"."qty" * "dd"."price") as "totalSales"
+      FROM "DeliveryDetails" as "dd"
+      LEFT JOIN "Deliveries" as "d" on "d"."id" = "dd"."DeliveryId"
+      LEFT JOIN "Products" as "pr" on "pr"."id" = "dd"."ProductId"
+      WHERE "d"."date" >= '${startDate}' AND "d"."date" <= '${endDate}'
+      GROUP BY "pr"."id", "pr"."name", "dd"."price"
+
+        `
+    );
+
+    const [purchases] = await sequelize.query(
+      `
+      SELECT
+        "pr"."id",
+        "pr"."name",
+        "pd"."price" as "buyPrice",
+        SUM("pd"."qty") as "totalQty",
+        SUM("pd"."qty" * "pd"."price") as "totalPurchases"
+      FROM "PurchaseDetails" as "pd"
+      LEFT JOIN "Purchases" as "p" on "p"."id" = "pd"."PurchaseId"
+      LEFT JOIN "Products" as "pr" on "pr"."id" = "pd"."ProductId"
+      WHERE "p"."date" >= '${startDate}' AND "p"."date" <= '${endDate}'
+      GROUP BY "pr"."id", "pr"."name", "pd"."price"
+
+        `
+    );
+
+    const [expenditures] = await sequelize.query(
+      `
+      SELECT
+        "e"."id",
+        "e"."name",
+        "ed"."amount" as "expenseAmount",
+        SUM("ed"."qty") as "totalQty",
+        SUM("ed"."qty" * "ed"."amount") as "totalExpense"
+      FROM "ExpenseDetails" as "ed"
+      LEFT JOIN "Expenditures" as "ex" on "ex"."id" = "ed"."ExpenditureId"
+      LEFT JOIN "Expenses" as "e" on "e"."id" = "ed"."ExpenseId"
+      WHERE "ex"."date" >= '${startDate}' AND "ex"."date" <= '${endDate}'
+      GROUP BY "e"."id", "e"."name", "ed"."amount"
+
+        `
+    );
+    const totalSales = sales.reduce(
+      (sum, sale) => sum + parseFloat(sale.totalSales),
+      0
+    );
+
+    const totalPurchases = purchases.reduce(
+      (sum, pur) => sum + parseFloat(pur.totalPurchases),
+      0
+    );
+    const totalExpenditures = expenditures.reduce(
+      (sum, ex) => sum + parseFloat(ex.totalExpense),
+      0
+    );
+
+    const totalProfits = totalSales - totalPurchases - totalExpenditures;
+
+    const pdfStream = await createPDFStream(
+      path.join(__dirname, "..", "..", "templates", "full-report.hbs"),
+      {
+        sales,
+        purchases,
+        expenditures,
+        totalProfits,
+        startDate,
+        endDate,
+        totalSales,
+        totalPurchases,
+        totalExpenditures,
+      }
+    );
+
+    pdfStream.pipe(res);
+
+    // res.json({ data: { sales, purchases, expenditures, totalProfits } });
   } catch (error) {
     next(error);
   }

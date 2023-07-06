@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Full Report</title>
+    {{> reset}}
+    {{> fullReportStyle}}
+  </head>
+  <body>
+    <main>
+     <header class="header">
+        <h1>Report</h1>
+        <p>{{startDate}} - {{endDate}}</p>
+      </header>
+      <section class="section">
+        <header><h2>#Sales</h2></header>
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Product</th>
+              <th class="right">Sale Price</th>
+              <th class="right">Qty</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each sales}}
+            <tr>
+              <td class="left">{{this.name}}</td>
+              <td class="right">{{formatRP this.salePrice}}</td>
+              <td class="right">{{this.totalQty}}</td>
+              <td class="right">{{formatRP this.totalSales}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="left">Total Sales</td>
+              <td class="right">{{formatRP totalSales}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+      <section class="section">
+        <header><h2>#Purchases</h2></header>
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Product</th>
+              <th class="right">Sale Price</th>
+              <th class="right">Qty</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each purchases}}
+            <tr>
+              <td class="left">{{this.name}}</td>
+              <td class="right">{{formatRP this.buyPrice}}</td>
+              <td class="right">{{this.totalQty}}</td>
+              <td class="right">{{formatRP this.totalPurchases}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="left">Total Purchases</td>
+              <td class="right">{{formatRP totalPurchases}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+      <section class="section">
+        <header><h2>#Expenses</h2></header>
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Expense</th>
+              <th class="right">Price</th>
+              <th class="right">Qty</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+           {{#each expenditures}}
+            <tr>
+              <td class="left">{{this.name}}</td>
+              <td class="right">{{formatRP this.expenseAmount}}</td>
+              <td class="right">{{this.totalQty}}</td>
+              <td class="right">{{formatRP this.totalExpense}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="left">Total Expenditure</td>
+              <td class="right">{{formatRP totalExpenditures}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+      <section class="section">
+        <div class="profits">
+          <div>Profits</div>
+          <div>{{formatRP totalProfits}}</div>
+        </div>
+      </section>
+
+    </main>
+  </body>
+</html>
