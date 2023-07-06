@@ -14,6 +14,7 @@ const {
       Delivery,
       Draw,
       Customer,
+      StockAdjustment,
     },
   },
   sequelize,
@@ -150,6 +151,26 @@ router.post("/:id/draw", async (req, res, next) => {
   }
 });
 
+router.post("/:id/adjust-stock", async (req, res, next) => {
+  try {
+    const { amount, date, description } = req.body;
+
+    const { id } = req.params;
+
+    const newAdj = StockAdjustment.build({
+      amount,
+      date,
+      ProductId: id,
+      description,
+    });
+    await newAdj.save();
+
+    res.json({ message: "Success", data: newAdj });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/:id/stock", async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -198,6 +219,15 @@ router.get("/:id/stock", async (req, res, next) => {
           ProductId: product.id,
         },
       });
+
+      const adjustments = await StockAdjustment.findAll({
+        where: {
+          date: {
+            [Op.gte]: product.keepStockSince,
+          },
+          ProductId: product.id,
+        },
+      });
       const incomingNumber = incoming.reduce(
         (sum, inc) =>
           sum +
@@ -217,7 +247,12 @@ router.get("/:id/stock", async (req, res, next) => {
         0
       );
 
-      stock = incomingNumber - outgoingNumber - drawNumber;
+      const adjustmentNumber = adjustments.reduce(
+        (sum, adj) => sum + parseInt(adj.amount),
+        0
+      );
+
+      stock = incomingNumber - outgoingNumber - drawNumber + adjustmentNumber;
     }
 
     res.json({ data: stock });
@@ -276,7 +311,18 @@ router.get("/:id/history", async (req, res, next) => {
           ProductId: product.id,
         },
       });
-      return res.json({ data: { purchaseDetails, deliveryDetails, draws } });
+
+      const adjustments = await StockAdjustment.findAll({
+        where: {
+          date: {
+            [Op.gte]: product.keepStockSince,
+          },
+          ProductId: product.id,
+        },
+      });
+      return res.json({
+        data: { purchaseDetails, deliveryDetails, draws, adjustments },
+      });
     }
 
     res.json({ data: 0 });
@@ -295,7 +341,8 @@ router.get("/stock-report", async (req, res, next) => {
         COALESCE(SUM("pd"."amount"), 0) as "totalIn",
         COALESCE(SUM("dd"."amount"), 0) as "totalOut",
         COALESCE(SUM("dr"."amount"), 0) as "totalDrawn",
-        (COALESCE(SUM("pd"."amount"), 0) - COALESCE(SUM("dd"."amount"), 0) - COALESCE(SUM("dr"."amount"), 0)) as "stock"
+        COALESCE(SUM("sa"."amount"), 0) as "totalAdjusted",
+        (COALESCE(SUM("pd"."amount"), 0) - COALESCE(SUM("dd"."amount"), 0) - COALESCE(SUM("dr"."amount"), 0) + COALESCE(SUM("sa"."amount"), 0)) as "stock"
       FROM "Products" as "p"
       LEFT JOIN
         (
@@ -329,6 +376,16 @@ router.get("/stock-report", async (req, res, next) => {
           group by "productId"
         ) as "dr"
         ON "dr"."productId" = "p"."id"
+      LEFT JOIN
+        (
+          SELECT 
+            "Products"."id" as "productId", sum("StockAdjustments"."amount") as "amount"
+          FROM "StockAdjustments"
+          inner join "Products" on "StockAdjustments"."ProductId" = "Products"."id"
+          Where "Products"."keepStockSince" is not null and "StockAdjustments"."date" >= "Products"."keepStockSince"
+          group by "productId"
+        ) as "sa"
+        ON "sa"."productId" = "p"."id"
       WHERE "p"."keepStockSince" is not null
       GROUP BY
         "p"."name", "p"."id"

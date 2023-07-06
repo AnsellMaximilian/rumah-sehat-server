@@ -57,19 +57,6 @@ module.exports = (sequelize) => {
         return this.Customer?.fullName;
       },
     },
-    totalDiscount: {
-      type: DataTypes.VIRTUAL,
-      get() {
-        if (this.DrDiscountModel) {
-          return (
-            (this.subtotalPoints - this.DrDiscountModel.subtractor) *
-            this.DrDiscountModel.base *
-            (this.DrDiscountModel.percentage / 100)
-          );
-        }
-        return 0;
-      },
-    },
 
     isDeliveryCostIndividual: {
       type: DataTypes.VIRTUAL,
@@ -106,12 +93,7 @@ module.exports = (sequelize) => {
     totalPriceRP: {
       type: DataTypes.VIRTUAL,
       get() {
-        return (
-          this.subtotalPriceRP +
-          this.cost -
-          this.totalDiscount +
-          this.totalDeliveryCost
-        );
+        return this.subtotalPriceRP + this.cost - this.totalDeliveryCost;
       },
     },
   });
