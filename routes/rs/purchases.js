@@ -93,7 +93,7 @@ router.get("/", async (req, res, next) => {
       whereClause.PurchaseInvoiceId = null;
     }
     const purchases = await Purchase.findAll({
-      include: [PurchaseDetail, Supplier, Delivery],
+      include: [PurchaseDetail, Supplier, Delivery, PurchaseInvoice],
       where: whereClause,
     });
     res.json({ data: purchases });
@@ -113,6 +113,21 @@ router.get("/designated-sales", async (req, res, next) => {
       },
     });
     res.json({ data: sales });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:id/unlink", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const purchase = await Purchase.findByPk(id);
+    if (purchase.PurchaseInvoiceId !== null) {
+      await purchase.update({ PurchaseInvoiceId: null });
+    }
+
+    res.json({ message: "Success", data: purchase });
   } catch (error) {
     next(error);
   }
