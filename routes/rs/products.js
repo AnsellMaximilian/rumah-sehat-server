@@ -404,7 +404,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const product = await Product.findByPk(id, {
-      include: [PurchaseDetail, DeliveryDetail],
+      include: [PurchaseDetail, DeliveryDetail, Supplier],
     });
     if (!product) throw `Can't find product with id ${id}`;
     res.json({ data: product });
