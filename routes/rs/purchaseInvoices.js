@@ -132,7 +132,7 @@ router.get("/:id", async (req, res, next) => {
       include: [
         {
           model: Purchase,
-          include: [PurchaseDetail],
+          include: [{ model: PurchaseDetail, include: Product }],
         },
         { model: Supplier },
       ],
