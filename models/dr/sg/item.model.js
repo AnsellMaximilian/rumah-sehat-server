@@ -9,6 +9,14 @@ module.exports = (sequelize) => {
         len: 1,
       },
     },
+    weight: {
+      type: DataTypes.DECIMAL(7, 3),
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+      defaultValue: 0,
+    },
     priceSGD: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -28,6 +36,12 @@ module.exports = (sequelize) => {
       allowNull: false,
       validate: {
         min: 0,
+      },
+    },
+    recommendedDeliveryCost: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return 200000 / (750 / this.weight);
       },
     },
   });

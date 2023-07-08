@@ -16,9 +16,15 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name, priceSGD, points, deliveryCost } = req.body;
+    const { name, priceSGD, points, deliveryCost, weight } = req.body;
 
-    const newItem = DrSgItem.build({ name, priceSGD, points, deliveryCost });
+    const newItem = DrSgItem.build({
+      name,
+      priceSGD,
+      points,
+      deliveryCost,
+      weight,
+    });
     await newItem.save();
 
     res.json({ message: "Success", data: newItem });
@@ -40,13 +46,13 @@ router.get("/:id", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { name, priceSGD, points, deliveryCost } = req.body;
+    const { name, priceSGD, points, deliveryCost, weight } = req.body;
     const { id } = req.params;
 
     const item = await DrSgItem.findByPk(id);
 
     await item.update(
-      { name, priceSGD, points, deliveryCost },
+      { name, priceSGD, points, deliveryCost, weight },
       {
         where: {
           id: id,
