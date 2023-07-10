@@ -1,7 +1,18 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Supplier, Product, PurchaseAdjustment },
+    models: {
+      Supplier,
+      Product,
+      PurchaseAdjustment,
+      Purchase,
+      PurchaseInvoice,
+      PurchaseDetail,
+      Customer,
+      DeliveryDetail,
+      Delivery,
+      Invoice,
+    },
   },
 } = require("../../models/index");
 
@@ -46,8 +57,65 @@ router.get("/:id", async (req, res, next) => {
     const supplier = await Supplier.findByPk(id, {
       include: [PurchaseAdjustment],
     });
+    const details = await PurchaseDetail.findAll({
+      include: [
+        {
+          model: Purchase,
+          include: [
+            {
+              model: PurchaseInvoice,
+              where: {
+                SupplierId: supplier.id,
+              },
+            },
+          ],
+        },
+      ],
+    });
     if (!supplier) throw `Can't find supplier with id ${id}`;
     res.json({ data: supplier });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:id/details", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const purchaseDetails = await PurchaseDetail.findAll({
+      include: [
+        {
+          model: Product,
+          where: {
+            SupplierId: id,
+          },
+        },
+        {
+          model: Purchase,
+          include: [
+            {
+              model: PurchaseInvoice,
+            },
+          ],
+        },
+      ],
+    });
+    const deliveryDetails = await DeliveryDetail.findAll({
+      include: [
+        {
+          model: Product,
+          where: {
+            SupplierId: id,
+          },
+        },
+        {
+          model: Delivery,
+          include: [{ model: Customer }],
+        },
+      ],
+    });
+
+    res.json({ data: { purchaseDetails, deliveryDetails } });
   } catch (error) {
     next(error);
   }
