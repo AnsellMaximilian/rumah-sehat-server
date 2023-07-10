@@ -85,8 +85,6 @@ const getProfits = async (startDate, endDate) => {
         `
   );
 
-  console.log({ profits, suppliers, totals });
-
   return { profits, suppliers, totals };
 };
 
@@ -489,6 +487,69 @@ router.get("/full-report", async (req, res, next) => {
     pdfStream.pipe(res);
 
     // res.json({ data: { sales, purchases, expenditures, totalProfits } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/full-report-data", async (req, res, next) => {
+  try {
+    let { startDate, endDate } = req.query;
+    if (!startDate) startDate = moment().format("YYYY-MM-DD");
+    if (!endDate) endDate = moment().format("YYYY-MM-DD");
+
+    const sales = await Supplier.findAll({
+      order: [["name"]],
+
+      include: [
+        {
+          model: Product,
+          include: [
+            {
+              model: DeliveryDetail,
+              include: [
+                {
+                  model: Delivery,
+                  where: {
+                    date: {
+                      [Op.gte]: startDate,
+                      [Op.lte]: endDate,
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const purchases = await Supplier.findAll({
+      order: [["name"]],
+      include: [
+        {
+          model: Product,
+          include: [
+            {
+              model: PurchaseDetail,
+              include: [
+                {
+                  model: Purchase,
+                  where: {
+                    date: {
+                      [Op.gte]: startDate,
+                      [Op.lte]: endDate,
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    res.json({ data: { sales, purchases } });
   } catch (error) {
     next(error);
   }

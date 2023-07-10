@@ -10,7 +10,7 @@ module.exports = (sequelize) => {
       },
     },
     amount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(7, 3),
       allowNull: false,
     },
     flow: {

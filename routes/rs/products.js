@@ -231,24 +231,24 @@ router.get("/:id/stock", async (req, res, next) => {
       const incomingNumber = incoming.reduce(
         (sum, inc) =>
           sum +
-          inc.PurchaseDetails.reduce((sum, pd) => sum + parseInt(pd.qty), 0),
+          inc.PurchaseDetails.reduce((sum, pd) => sum + parseFloat(pd.qty), 0),
         0
       );
 
       const outgoingNumber = outgoing.reduce(
         (sum, out) =>
           sum +
-          out.DeliveryDetails.reduce((sum, dd) => sum + parseInt(dd.qty), 0),
+          out.DeliveryDetails.reduce((sum, dd) => sum + parseFloat(dd.qty), 0),
         0
       );
 
       const drawNumber = draws.reduce(
-        (sum, draw) => sum + parseInt(draw.amount),
+        (sum, draw) => sum + parseFloat(draw.amount),
         0
       );
 
       const adjustmentNumber = adjustments.reduce(
-        (sum, adj) => sum + parseInt(adj.amount),
+        (sum, adj) => sum + parseFloat(adj.amount),
         0
       );
 
