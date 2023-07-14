@@ -9,5 +9,19 @@ module.exports = (sequelize) => {
         len: 1,
       },
     },
+    accountNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        len: 1,
+      },
+    },
+    accountName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        len: 1,
+      },
+    },
   });
 };

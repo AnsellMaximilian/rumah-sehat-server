@@ -40,9 +40,9 @@ router.get("/active", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, accountNumber, accountName } = req.body;
 
-    const newItem = Supplier.build({ name });
+    const newItem = Supplier.build({ name, accountNumber, accountName });
     await newItem.save();
 
     res.json({ message: "Success", data: newItem });
@@ -123,13 +123,13 @@ router.get("/:id/details", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, accountNumber, accountName } = req.body;
     const { id } = req.params;
 
     const supplier = await Supplier.findByPk(id);
 
     await supplier.update(
-      { name },
+      { name, accountNumber, accountName },
       {
         where: {
           id: id,
