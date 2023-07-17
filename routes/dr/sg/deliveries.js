@@ -73,7 +73,7 @@ router.post("/", async (req, res, next) => {
     await newDelivery.save();
 
     for (const deliveryDetail of deliveryDetails) {
-      const { priceSGD, qty, points, DrSgItemId, deliveryCost } =
+      const { priceSGD, qty, points, DrSgItemId, deliveryCost, weight } =
         deliveryDetail;
 
       await newDelivery.createDrSgDeliveryDetail({
@@ -82,6 +82,7 @@ router.post("/", async (req, res, next) => {
         points,
         DrSgItemId,
         deliveryCost,
+        weight,
       });
     }
 
@@ -138,7 +139,7 @@ router.patch("/:id", async (req, res, next) => {
     });
 
     for (const deliveryDetail of deliveryDetails) {
-      const { priceSGD, qty, points, DrSgItemId, deliveryCost } =
+      const { priceSGD, qty, points, DrSgItemId, deliveryCost, weight } =
         deliveryDetail;
 
       await delivery.createDrSgDeliveryDetail({
@@ -147,6 +148,7 @@ router.patch("/:id", async (req, res, next) => {
         points,
         DrSgItemId,
         deliveryCost,
+        weight,
       });
     }
 

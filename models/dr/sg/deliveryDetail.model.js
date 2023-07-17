@@ -16,6 +16,14 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    weight: {
+      type: DataTypes.DECIMAL(7, 3),
+      allowNull: false,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+      },
+    },
     deliveryCost: {
       type: DataTypes.INTEGER,
       validate: {
@@ -45,6 +53,12 @@ module.exports = (sequelize) => {
       type: DataTypes.VIRTUAL,
       get() {
         return this.points * this.qty;
+      },
+    },
+    totalWeight: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.weight * this.qty;
       },
     },
     totalDeliveryCost: {
