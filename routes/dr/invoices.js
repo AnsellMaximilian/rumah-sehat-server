@@ -109,6 +109,7 @@ router.get("/", async (req, res) => {
     const invoices = await DrInvoice.findAll({
       include: [
         { model: Customer },
+        { model: DrDiscountModel },
         {
           model: DrIdDelivery,
           include: [
@@ -175,6 +176,7 @@ router.post("/bulk-print", async (req, res, next) => {
     const invoices = await DrInvoice.findAll({
       include: [
         { model: Customer },
+        { model: DrDiscountModel },
         {
           model: DrIdDelivery,
           include: [
@@ -266,12 +268,13 @@ router.post("/bulk-print", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { date, note, CustomerId } = req.body;
+    const { date, note, CustomerId, DrDiscountModelId } = req.body;
 
     const newInvoice = DrInvoice.build({
       date,
       note,
       CustomerId,
+      DrDiscountModelId,
     });
     await newInvoice.save();
 
@@ -289,6 +292,7 @@ router.get("/:id", async (req, res) => {
         {
           model: Customer,
         },
+        { model: DrDiscountModel },
         {
           model: DrIdDelivery,
           include: [
@@ -330,6 +334,8 @@ router.get("/:id/print", async (req, res, next) => {
         {
           model: Customer,
         },
+        { model: DrDiscountModel },
+
         {
           model: DrIdDelivery,
           include: [
@@ -403,6 +409,8 @@ router.patch("/:id/pay", async (req, res, next) => {
         {
           model: Customer,
         },
+        { model: DrDiscountModel },
+
         {
           model: DrIdDelivery,
           include: [
@@ -443,12 +451,15 @@ router.patch("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const { date, note, CustomerId } = req.body;
+    const { date, note, CustomerId, DrDiscountModelId } = req.body;
 
     const invoice = await DrInvoice.findByPk(id, {
       include: [
         {
           model: Customer,
+        },
+        {
+          model: DrDiscountModel,
         },
         {
           model: DrIdDelivery,
@@ -482,6 +493,7 @@ router.patch("/:id", async (req, res, next) => {
         date,
         note,
         CustomerId,
+        DrDiscountModelId,
       },
       {
         where: {

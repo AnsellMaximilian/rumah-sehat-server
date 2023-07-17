@@ -241,6 +241,9 @@ PurchaseInvoice.hasMany(PurchaseAdjustment, {
 });
 
 // DR's
+DrInvoice.belongsTo(DrDiscountModel);
+DrDiscountModel.hasMany(DrInvoice);
+
 DrIdDelivery.belongsTo(DrDiscountModel);
 DrSgDelivery.belongsTo(DrDiscountModel);
 DrMyDelivery.belongsTo(DrDiscountModel);
