@@ -20,8 +20,21 @@ const moment = require("moment");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { SupplierId } = req.query;
+    const { SupplierId, startDate, endDate } = req.query;
+
     const whereClause = {};
+    if (startDate) {
+      whereClause.date = {
+        [Op.gte]: startDate,
+      };
+    }
+
+    if (endDate) {
+      whereClause.date = {
+        ...whereClause.date,
+        [Op.lte]: endDate,
+      };
+    }
 
     if (SupplierId) {
       whereClause.SupplierId = SupplierId;

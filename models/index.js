@@ -314,20 +314,11 @@ DrInvoice.hasMany(DrMyDelivery, {
 });
 
 // EXPENSES
-Expenditure.hasMany(ExpenseDetail, {
-  onDelete: "CASCADE",
-});
-Expense.hasMany(ExpenseDetail, {
+Expense.hasMany(Expenditure, {
   onDelete: "SET NULL",
 });
 
-ExpenseDetail.belongsTo(Expenditure, {
-  foreignKey: {
-    allowNull: false,
-  },
-});
-
-ExpenseDetail.belongsTo(Expense, {
+Expenditure.belongsTo(Expense, {
   foreignKey: {
     allowNull: false,
   },

@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Expense, Expenditure, ExpenseDetail },
+    models: { Expense, Expenditure },
     query,
   },
   sequelize,
@@ -12,10 +12,24 @@ const moment = require("moment");
 
 router.get("/", async (req, res, next) => {
   try {
+    const { startDate, endDate } = req.query;
+
     const whereClause = {};
+    if (startDate) {
+      whereClause.date = {
+        [Op.gte]: startDate,
+      };
+    }
+
+    if (endDate) {
+      whereClause.date = {
+        ...whereClause.date,
+        [Op.lte]: endDate,
+      };
+    }
 
     const expenditures = await Expenditure.findAll({
-      include: [{ model: ExpenseDetail, include: [Expense] }],
+      include: [{ model: Expense }],
       where: whereClause,
     });
     res.json({ data: expenditures });
@@ -26,24 +40,17 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { date, deliveryCost, note, expenseDetails } = req.body;
+    const { date, description, paid, amount, qty, unit, ExpenseId } = req.body;
     const newExpenditure = Expenditure.build({
       date,
-      deliveryCost,
-      note,
+      description,
+      paid,
+      amount,
+      qty,
+      unit,
+      ExpenseId,
     });
     await newExpenditure.save();
-
-    for (const expenseDetail of expenseDetails) {
-      const { amount, qty, unit, ExpenseId } = expenseDetail;
-
-      await newExpenditure.createExpenseDetail({
-        amount,
-        qty,
-        unit,
-        ExpenseId,
-      });
-    }
 
     res.json({ message: "Success", data: newExpenditure });
   } catch (error) {
@@ -58,8 +65,7 @@ router.patch("/:id/pay", async (req, res, next) => {
     const expenditure = await Expenditure.findByPk(id, {
       include: [
         {
-          model: ExpenseDetail,
-          include: [{ model: Expense }],
+          model: Expense,
         },
       ],
     });
@@ -74,7 +80,7 @@ router.patch("/:id/pay", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { date, deliveryCost, note, expenseDetails } = req.body;
+    const { date, description, paid, amount, qty, unit, ExpenseId } = req.body;
     const { id } = req.params;
 
     const expenditure = await Expenditure.findByPk(id, {
@@ -82,32 +88,13 @@ router.patch("/:id", async (req, res, next) => {
     });
 
     await expenditure.update(
-      { date, deliveryCost, note },
+      { date, description, paid, amount, qty, unit, ExpenseId },
       {
         where: {
           id: id,
         },
       }
     );
-
-    // Delete delivery details
-    await ExpenseDetail.destroy({
-      where: {
-        ExpenditureId: expenditure.id,
-      },
-    });
-
-    // replace delivery details
-    for (const expenseDetail of expenseDetails) {
-      const { amount, qty, unit, ExpenseId } = expenseDetail;
-
-      await expenditure.createExpenseDetail({
-        amount,
-        qty,
-        unit,
-        ExpenseId,
-      });
-    }
 
     res.json({ data: expenditure });
   } catch (error) {
@@ -120,7 +107,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const expenditure = await Expenditure.findByPk(id, {
-      include: [{ model: ExpenseDetail, include: [Expense] }],
+      include: [{ model: Expense }],
     });
     if (!expenditure) throw `Can't find expenditure with id ${id}`;
     res.json({ data: expenditure });

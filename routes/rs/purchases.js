@@ -78,7 +78,7 @@ const getPurchaseTotals = async (startDate, endDate, unpaidFilter) => {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { SupplierId, invoiced } = req.query;
+    const { SupplierId, invoiced, startDate, endDate } = req.query;
     const whereClause = {};
 
     if (SupplierId) {
@@ -91,6 +91,19 @@ router.get("/", async (req, res, next) => {
       };
     } else if (invoiced === "false") {
       whereClause.PurchaseInvoiceId = null;
+    }
+
+    if (startDate) {
+      whereClause.date = {
+        [Op.gte]: startDate,
+      };
+    }
+
+    if (endDate) {
+      whereClause.date = {
+        ...whereClause.date,
+        [Op.lte]: endDate,
+      };
     }
     const purchases = await Purchase.findAll({
       include: [PurchaseDetail, Supplier, Delivery, PurchaseInvoice],
