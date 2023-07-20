@@ -6,6 +6,7 @@ const modelDefiners = [
   require("./expense.model"),
   require("./expenseDetail.model"),
   require("./expenditure.model"),
+  require("./transaction.model"),
 
   // Rumah Sehat
   require("./rs/product.model"),
@@ -56,6 +57,7 @@ for (const modelDefiner of modelDefiners) {
 const {
   Customer,
   Region,
+  Transaction,
   // Rumah Sehat
   Supplier,
   Product,
@@ -238,6 +240,16 @@ PurchaseInvoice.hasMany(PurchaseAdjustment, {
   onDelete: "CASCADE",
   as: "PurchaseInvoiceAdjustments",
   foreignKey: "AdjustedPurchaseInvoiceId",
+});
+
+Transaction.belongsTo(PurchaseInvoice, {
+  foreignKey: {
+    allowNull: true,
+  },
+});
+
+PurchaseInvoice.hasMany(Transaction, {
+  onDelete: "SET NULL",
 });
 
 // DR's

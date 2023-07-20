@@ -20,7 +20,7 @@ const moment = require("moment");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { SupplierId, startDate, endDate } = req.query;
+    const { SupplierId, startDate, endDate, paid } = req.query;
 
     const whereClause = {};
     if (startDate) {
@@ -38,6 +38,10 @@ router.get("/", async (req, res, next) => {
 
     if (SupplierId) {
       whereClause.SupplierId = SupplierId;
+    }
+
+    if (paid === "false") {
+      whereClause.paid = false;
     }
     const purchases = await PurchaseInvoice.findAll({
       include: [

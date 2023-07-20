@@ -24,6 +24,7 @@ app.use("/customers", require("./routes/customers"));
 app.use("/regions", require("./routes/regions"));
 app.use("/expenses", require("./routes/expenses"));
 app.use("/expenditures", require("./routes/expenditures"));
+app.use("/transactions", require("./routes/transactions"));
 app.use("/dr", require("./routes/dr"));
 app.use("/rs", require("./routes/rs"));
 
