@@ -51,6 +51,19 @@ module.exports = (sequelize) => {
           : 0;
       },
     },
+
+    subtotalWeight: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.DrSgDeliveryDetails
+          ? this.DrSgDeliveryDetails.reduce(
+              (total, detail) => total + detail.totalWeight,
+              0
+            )
+          : 0;
+      },
+    },
+
     customerFullName: {
       type: DataTypes.VIRTUAL,
       get() {
