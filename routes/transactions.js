@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const {
   sequelize: {
-    models: { Expense, Expenditure, Transaction, PurchaseInvoice },
+    models: { Expense, Expenditure, Transaction, PurchaseInvoice, Supplier },
     query,
   },
   sequelize,
@@ -29,7 +29,7 @@ router.get("/", async (req, res, next) => {
     }
 
     const transactions = await Transaction.findAll({
-      include: [{ model: PurchaseInvoice }],
+      include: [{ model: PurchaseInvoice, include: [Supplier] }],
       where: whereClause,
     });
     res.json({ data: transactions });
@@ -49,6 +49,18 @@ router.post("/", async (req, res, next) => {
     });
     await newTransaction.save();
 
+    if (PurchaseInvoiceId) {
+      const purchaseInvoice = await PurchaseInvoice.findByPk(
+        PurchaseInvoiceId,
+        {
+          include: [],
+        }
+      );
+      await purchaseInvoice.update({
+        paid: !purchaseInvoice.paid,
+      });
+    }
+
     res.json({ message: "Success", data: newTransaction });
   } catch (error) {
     console.log(error);
@@ -62,7 +74,7 @@ router.patch("/:id", async (req, res, next) => {
     const { id } = req.params;
 
     const transaction = await Transaction.findByPk(id, {
-      include: [{ model: PurchaseInvoice }],
+      include: [{ model: PurchaseInvoice, include: [Supplier] }],
     });
 
     await transaction.update(
@@ -85,7 +97,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const transaction = await Transaction.findByPk(id, {
-      include: [{ model: PurchaseInvoice }],
+      include: [{ model: PurchaseInvoice, include: [Supplier] }],
     });
     if (!transaction) throw `Can't find transaction with id ${id}`;
     res.json({ data: transaction });
