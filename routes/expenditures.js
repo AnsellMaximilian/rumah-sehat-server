@@ -40,7 +40,16 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { date, description, paid, amount, qty, unit, ExpenseId } = req.body;
+    const {
+      date,
+      description,
+      paid,
+      amount,
+      qty,
+      unit,
+      ExpenseId,
+      DeliveryId,
+    } = req.body;
     const newExpenditure = Expenditure.build({
       date,
       description,
@@ -49,6 +58,7 @@ router.post("/", async (req, res, next) => {
       qty,
       unit,
       ExpenseId,
+      DeliveryId,
     });
     await newExpenditure.save();
 

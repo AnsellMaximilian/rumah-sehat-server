@@ -336,6 +336,12 @@ Expenditure.belongsTo(Expense, {
   },
 });
 
+Expenditure.belongsTo(Delivery, {
+  foreignKey: {
+    allowNull: true,
+  },
+});
+
 // DRAW
 
 Product.hasMany(Draw, {
