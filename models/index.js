@@ -187,6 +187,16 @@ Customer.hasMany(PurchaseDetail);
 
 PurchaseDetail.belongsTo(Customer);
 
+PurchaseDetail.hasOne(DeliveryDetail, {
+  foreignKey: {
+    allowNull: true,
+  },
+});
+
+DeliveryDetail.belongsTo(PurchaseDetail, {
+  onDelete: "SET NULL",
+});
+
 Invoice.hasMany(Delivery, {
   onDelete: "CASCADE",
 });

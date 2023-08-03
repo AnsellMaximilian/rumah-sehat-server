@@ -116,6 +116,7 @@ router.post("/", async (req, res, next) => {
       const { price, qty, ProductId, cost, designatedSaleId } = deliveryDetail;
 
       let makedetail = true;
+      let designatedPurchaseDetail = null;
 
       if (designatedSaleId) {
         const designatedSale = await PurchaseDetail.findByPk(designatedSaleId);
@@ -123,6 +124,7 @@ router.post("/", async (req, res, next) => {
           await designatedSale.update({
             CustomerId: null,
           });
+          designatedPurchaseDetail = designatedSale;
         } else {
           // designatedSale id is sent but it doesn't exist, or it does but no longer has a designated recipient
           makedetail = false;
@@ -135,6 +137,9 @@ router.post("/", async (req, res, next) => {
           qty,
           ProductId,
           cost,
+          PurchaseDetailId: designatedPurchaseDetail
+            ? designatedPurchaseDetail.id
+            : null,
         });
       }
     }
@@ -223,6 +228,7 @@ router.patch("/:id", async (req, res, next) => {
       const { price, qty, ProductId, cost, designatedSaleId } = deliveryDetail;
 
       let makedetail = true;
+      let designatedPurchaseDetail = null;
 
       if (designatedSaleId) {
         const designatedSale = await PurchaseDetail.findByPk(designatedSaleId);
@@ -230,6 +236,7 @@ router.patch("/:id", async (req, res, next) => {
           await designatedSale.update({
             CustomerId: null,
           });
+          designatedPurchaseDetail = designatedSale;
         } else {
           // designatedSale id is sent but it doesn't exist, or it does but no longer has a designated recipient
           makedetail = false;
@@ -242,6 +249,9 @@ router.patch("/:id", async (req, res, next) => {
           qty,
           ProductId,
           cost,
+          PurchaseDetailId: designatedPurchaseDetail
+            ? designatedPurchaseDetail.id
+            : null,
         });
       }
     }

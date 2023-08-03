@@ -91,6 +91,13 @@ router.get("/:id/details", async (req, res, next) => {
           },
         },
         {
+          model: DeliveryDetail,
+          include: {
+            model: Delivery,
+            include: [{ model: Customer }],
+          },
+        },
+        {
           model: Purchase,
           include: [
             {
@@ -107,6 +114,9 @@ router.get("/:id/details", async (req, res, next) => {
           where: {
             SupplierId: id,
           },
+        },
+        {
+          model: PurchaseDetail,
         },
         {
           model: Delivery,
