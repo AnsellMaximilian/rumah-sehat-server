@@ -103,6 +103,10 @@ router.get("/:id/details", async (req, res, next) => {
             {
               model: PurchaseInvoice,
             },
+            {
+              model: Delivery,
+              include: [{ model: Customer }],
+            },
           ],
         },
       ],
