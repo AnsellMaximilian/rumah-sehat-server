@@ -46,5 +46,13 @@ module.exports = (sequelize) => {
           : null;
       },
     },
+    accountName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    accountNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
 };
