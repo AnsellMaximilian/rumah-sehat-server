@@ -10,11 +10,13 @@ const {
     models: {
       Product,
       ProductCategory,
+      PurchaseInvoice,
       Supplier,
       DeliveryDetail,
       Delivery,
       Purchase,
       PurchaseDetail,
+      Transaction,
       Expenditure,
       ExpenseDetail,
       Expense,
@@ -550,6 +552,48 @@ router.get("/full-report-data", async (req, res, next) => {
     });
 
     res.json({ data: { sales, purchases } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/petty-cash", async (req, res, next) => {
+  try {
+    const transactions = await Transaction.findAll({
+      include: [{ model: PurchaseInvoice, include: [Supplier] }],
+      order: [
+        ["date", "ASC"],
+        ["id", "ASC"],
+      ],
+    });
+
+    let balance = 0;
+    const transactionsMap = transactions
+      .map((t) => t.toJSON())
+      .map((t) => {
+        balance = balance + t.amount;
+        return {
+          ...t,
+          isOutgoing: t.type === "OUTGOING",
+          isIncoming: t.type === "INCOMING",
+          balance: balance,
+          newDescription: t.PurchaseInvoice?.Supplier
+            ? `${t.description} (${t.PurchaseInvoice?.Supplier.name})`
+            : t.description,
+          absAmount: Math.abs(t.amount),
+        };
+      });
+
+    const pdfStream = await createPDFStream(
+      path.join(__dirname, "..", "..", "templates", "petty-cash-report.hbs"),
+      {
+        transactions: transactionsMap,
+      }
+    );
+
+    pdfStream.pipe(res);
+
+    // res.json({ data: { sales, purchases, expenditures, totalProfits } });
   } catch (error) {
     next(error);
   }

@@ -31,6 +31,13 @@ const fullReportStylePartial = HBS.compile(
   )
 );
 
+const pettyCashStylePartial = HBS.compile(
+  fs.readFileSync(
+    path.join(__dirname, "..", "templates", "partials", "pettyCashStyle.hbs"),
+    "utf-8"
+  )
+);
+
 const separatorPartial = HBS.compile(
   fs.readFileSync(
     path.join(__dirname, "..", "templates", "partials", "separator.hbs"),
@@ -48,6 +55,7 @@ const productListStylePartial = HBS.compile(
 HBS.registerPartial("separator", separatorPartial);
 HBS.registerPartial("reportStyle", reportStylePartial);
 HBS.registerPartial("fullReportStyle", fullReportStylePartial);
+HBS.registerPartial("pettyCashStyle", pettyCashStylePartial);
 HBS.registerPartial("invoiceStyle", invoiceStylePartial);
 HBS.registerPartial("productListStyle", productListStylePartial);
 HBS.registerPartial("reset", resetPartial);
