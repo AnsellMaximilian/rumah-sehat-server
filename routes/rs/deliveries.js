@@ -225,7 +225,14 @@ router.patch("/:id", async (req, res, next) => {
     });
 
     for (const deliveryDetail of deliveryDetails) {
-      const { price, qty, ProductId, cost, designatedSaleId } = deliveryDetail;
+      const {
+        price,
+        qty,
+        ProductId,
+        cost,
+        designatedSaleId,
+        PurchaseDetailId,
+      } = deliveryDetail;
 
       let makedetail = true;
       let designatedPurchaseDetail = null;
@@ -251,6 +258,8 @@ router.patch("/:id", async (req, res, next) => {
           cost,
           PurchaseDetailId: designatedPurchaseDetail
             ? designatedPurchaseDetail.id
+            : PurchaseDetailId
+            ? PurchaseDetailId
             : null,
         });
       }
