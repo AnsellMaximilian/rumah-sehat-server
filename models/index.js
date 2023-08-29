@@ -38,6 +38,8 @@ const modelDefiners = [
   require("./dr/my/deliveryDetail.model"),
   require("./dr/id/stockAdjustment.model"),
   require("./dr/id/loan.model"),
+  require("./dr/sg/stockAdjustment.model"),
+  require("./dr/sg/loan.model"),
 ];
 
 const sequelize = new Sequelize(
@@ -92,12 +94,14 @@ const {
   DrInvoice,
   DrIdStockAdjustment,
   DrIdLoan,
+  DrSgStockAdjustment,
+  DrSgLoan,
 } = sequelize.models;
 
 Region.hasMany(Customer);
 Customer.belongsTo(Region);
 
-// LOANS
+// LOANS ID
 DrIdLoan.belongsTo(Customer);
 DrIdLoan.belongsTo(DrIdItem, {
   foreignKey: {
@@ -109,6 +113,20 @@ Customer.hasMany(DrIdLoan, {
 });
 DrIdItem.hasMany(DrIdLoan, {
   onDelete: "CASCADE",
+});
+
+// LOANS SG
+Customer.hasMany(DrSgLoan, {
+  onDelete: "SET NULL",
+});
+DrSgItem.hasMany(DrSgLoan, {
+  onDelete: "CASCADE",
+});
+DrSgLoan.belongsTo(Customer);
+DrSgLoan.belongsTo(DrSgItem, {
+  foreignKey: {
+    allowNull: false,
+  },
 });
 
 // RUMAH SEHAT
@@ -339,6 +357,11 @@ DrIdDeliveryDetail.belongsTo(DrIdDelivery, {
 DrSgDelivery.hasMany(DrSgDeliveryDetail, {
   onDelete: "CASCADE",
 });
+DrSgDeliveryDetail.belongsTo(DrSgDelivery, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
 
 DrMyDelivery.hasMany(DrMyDeliveryDetail, {
   onDelete: "CASCADE",
@@ -354,6 +377,16 @@ DrIdItem.hasMany(DrIdStockAdjustment, {
 });
 
 DrIdStockAdjustment.belongsTo(DrIdItem, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrSgItem.hasMany(DrSgStockAdjustment, {
+  onDelete: "CASCADE",
+});
+
+DrSgStockAdjustment.belongsTo(DrSgItem, {
   foreignKey: {
     allowNull: false,
   },

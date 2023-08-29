@@ -44,5 +44,10 @@ module.exports = (sequelize) => {
         return 200000 / (750 / this.weight);
       },
     },
+    keepStockSince: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      defaultValue: null,
+    },
   });
 };
