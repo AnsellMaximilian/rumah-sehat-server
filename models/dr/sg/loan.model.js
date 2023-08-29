@@ -65,5 +65,11 @@ module.exports = (sequelize) => {
         return this.transactionValue;
       },
     },
+    item: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.DrSgItem;
+      },
+    },
   });
 };
