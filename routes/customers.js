@@ -8,6 +8,9 @@ const {
       DrSgDelivery,
       DrIdDeliveryDetail,
       DrSgDeliveryDetail,
+      DrMyDelivery,
+      DrMyDeliveryDetail,
+      DrMyItem,
       DrIdItem,
       DrSgItem,
       Invoice,
@@ -22,7 +25,8 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { fullName, phone, address, note, RegionId } = req.query;
+    const { fullName, phone, address, note, RegionId, withDrDetails } =
+      req.query;
     const whereClause = {};
 
     if (fullName) {
@@ -53,8 +57,46 @@ router.get("/", async (req, res, next) => {
       };
     }
 
+    const drDetails = {};
+    if (withDrDetails) {
+      drDetails = {
+        include: [
+          { model: Customer },
+          { model: DrDiscountModel },
+          {
+            model: DrIdDelivery,
+            include: [
+              { model: DrIdDeliveryDetail, include: DrIdItem },
+              Customer,
+              DrDiscountModel,
+            ],
+          },
+          {
+            model: DrSgDelivery,
+            include: [
+              { model: DrSgDeliveryDetail, include: DrSgItem },
+              Customer,
+              DrDiscountModel,
+            ],
+          },
+          {
+            model: DrMyDelivery,
+            include: [
+              { model: DrMyDeliveryDetail, include: DrMyItem },
+              Customer,
+              DrDiscountModel,
+            ],
+          },
+        ],
+      };
+    }
+
     const customers = await Customer.findAll({
-      include: [{ model: Region }, { model: Invoice }, { model: DrInvoice }],
+      include: [
+        { model: Region },
+        { model: Invoice },
+        { model: DrInvoice, ...drDetails },
+      ],
       where: whereClause,
     });
     res.json({ data: customers });
@@ -95,8 +137,43 @@ router.post("/", async (req, res, next) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
     const customer = await Customer.findByPk(id, {
-      include: [{ model: Region }, { model: Adjustment }],
+      include: [
+        { model: Region },
+        { model: Adjustment },
+        {
+          model: DrInvoice,
+          include: [
+            { model: Customer },
+            { model: DrDiscountModel },
+            {
+              model: DrIdDelivery,
+              include: [
+                { model: DrIdDeliveryDetail, include: DrIdItem },
+                Customer,
+                DrDiscountModel,
+              ],
+            },
+            {
+              model: DrSgDelivery,
+              include: [
+                { model: DrSgDeliveryDetail, include: DrSgItem },
+                Customer,
+                DrDiscountModel,
+              ],
+            },
+            {
+              model: DrMyDelivery,
+              include: [
+                { model: DrMyDeliveryDetail, include: DrMyItem },
+                Customer,
+                DrDiscountModel,
+              ],
+            },
+          ],
+        },
+      ],
     });
     if (!customer) throw `Can't find item with id ${id}`;
     res.json({ data: customer });
