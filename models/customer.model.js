@@ -62,7 +62,7 @@ module.exports = (sequelize) => {
         if (!this.DrInvoices) {
           return null;
         }
-        const { monthStart, monthEnd } = getLastMonth();
+        const { monthStart, monthEnd } = getMonth();
         return this.DrInvoices.filter(
           (inv) => inv.date >= monthStart && inv.date <= monthEnd
         ).reduce((sum, inv) => sum + inv.totalPoints, 0);
@@ -74,7 +74,7 @@ module.exports = (sequelize) => {
         if (!this.DrInvoices) {
           return null;
         }
-        const { monthStart, monthEnd } = getLastMonth();
+        const { monthStart, monthEnd } = getMonth();
         return this.DrInvoices.filter(
           (inv) => inv.date >= monthStart && inv.date <= monthEnd
         ).reduce((sum, inv) => sum + inv.totalPriceRP, 0);
@@ -86,7 +86,7 @@ module.exports = (sequelize) => {
         if (!this.DrInvoices) {
           return null;
         }
-        const { monthStart, monthEnd } = getLastMonth();
+        const { monthStart, monthEnd } = getMonth();
         return this.DrInvoices.filter(
           (inv) => inv.date >= monthStart && inv.date <= monthEnd
         ).reduce((has, inv) => {
@@ -107,7 +107,7 @@ module.exports = (sequelize) => {
         if (!this.DrInvoices) {
           return null;
         }
-        const { monthStart, monthEnd } = getLastMonth();
+        const { monthStart, monthEnd } = getMonth();
         return this.DrInvoices.filter(
           (inv) => inv.date >= monthStart && inv.date <= monthEnd
         ).reduce((has, inv) => {
