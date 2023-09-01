@@ -37,8 +37,8 @@ const getProfits = async (startDate, endDate) => {
           FROM "Invoices" as "I"
       INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
       INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
-          AND "D"."date" >= '${startDate}'
-          AND "D"."date" <= '${endDate}'
+          AND "I"."date" >= '${startDate}'
+          AND "I"."date" <= '${endDate}'
       `
   );
 
@@ -60,8 +60,8 @@ const getProfits = async (startDate, endDate) => {
       INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
       INNER JOIN "Products" as "P" ON "DD"."ProductId" = "P"."id"
       INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
-          AND "D"."date" >= '${startDate}'
-          AND "D"."date" <= '${endDate}'
+          AND "I"."date" >= '${startDate}'
+          AND "I"."date" <= '${endDate}'
       GROUP BY "product", "DD"."price", "P"."cost", "supplierId", "S"."name", "productId"
       ORDER BY "product"
       `
@@ -81,8 +81,8 @@ const getProfits = async (startDate, endDate) => {
         INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
         INNER JOIN "Products" as "P" ON "DD"."ProductId" = "P"."id"
         INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
-            AND "D"."date" >= '${startDate}'
-            AND "D"."date" <= '${endDate}'
+            AND "I"."date" >= '${startDate}'
+            AND "I"."date" <= '${endDate}'
         GROUP BY "S"."name", "supplierId"
         `
   );
