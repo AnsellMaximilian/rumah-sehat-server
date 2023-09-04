@@ -16,6 +16,14 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    overallCost: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      default: 0,
+      validate: {
+        min: 0,
+      },
+    },
     qty: {
       type: DataTypes.DECIMAL(7, 3),
       allowNull: false,

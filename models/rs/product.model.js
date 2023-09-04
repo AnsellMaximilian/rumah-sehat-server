@@ -41,5 +41,13 @@ module.exports = (sequelize) => {
       allowNull: true,
       defaultValue: null,
     },
+    overallCost: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      default: 0,
+      validate: {
+        min: 0,
+      },
+    },
   });
 };

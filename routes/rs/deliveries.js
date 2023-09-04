@@ -114,7 +114,8 @@ router.post("/", async (req, res, next) => {
     await newDelivery.save();
 
     for (const deliveryDetail of deliveryDetails) {
-      const { price, qty, ProductId, cost, designatedSaleId } = deliveryDetail;
+      const { price, qty, ProductId, cost, overallCost, designatedSaleId } =
+        deliveryDetail;
 
       let makedetail = true;
       let designatedPurchaseDetail = null;
@@ -138,6 +139,7 @@ router.post("/", async (req, res, next) => {
           qty,
           ProductId,
           cost,
+          overallCost: overallCost ? overallCost : cost,
           PurchaseDetailId: designatedPurchaseDetail
             ? designatedPurchaseDetail.id
             : null,
@@ -261,6 +263,7 @@ router.patch("/:id", async (req, res, next) => {
         qty,
         ProductId,
         cost,
+        overallCost,
         designatedSaleId,
         PurchaseDetailId,
       } = deliveryDetail;
@@ -287,6 +290,7 @@ router.patch("/:id", async (req, res, next) => {
           qty,
           ProductId,
           cost,
+          overallCost: overallCost ? overallCost : cost,
           PurchaseDetailId: designatedPurchaseDetail
             ? designatedPurchaseDetail.id
             : PurchaseDetailId
