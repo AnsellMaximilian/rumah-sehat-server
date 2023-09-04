@@ -23,6 +23,8 @@ const modelDefiners = [
   require("./rs/invoice.model"),
   require("./rs/adjustment.model"),
   require("./rs/purchaseAdjustment.model"),
+  require("./rs/deliveryExpense.model"),
+  require("./rs/deliveryExpenseDetail.model"),
 
   // DR's Secret
   require("./dr/discountModel.model"),
@@ -80,6 +82,8 @@ const {
   Expense,
   Expenditure,
   ExpenseDetail,
+  DeliveryExpense,
+  DeliveryExpenseDetail,
   // DR's
   DrIdDelivery,
   DrSgDelivery,
@@ -416,6 +420,37 @@ Expenditure.belongsTo(Expense, {
 });
 
 Expenditure.belongsTo(Delivery, {
+  foreignKey: {
+    allowNull: true,
+  },
+});
+
+// DELIVERY EXPENSE (FOR ACCURATE COSTS)
+Expense.hasMany(DeliveryExpense, {
+  onDelete: "SET NULL",
+});
+
+DeliveryExpense.belongsTo(Expense, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DeliveryExpense.hasMany(DeliveryExpenseDetail, {
+  onDelete: "SET NULL",
+});
+
+DeliveryExpenseDetail.belongsTo(DeliveryExpense, {
+  foreignKey: {
+    allowNull: true,
+  },
+});
+
+DeliveryDetail.hasMany(DeliveryExpenseDetail, {
+  onDelete: "SET NULL",
+});
+
+DeliveryExpenseDetail.belongsTo(DeliveryDetail, {
   foreignKey: {
     allowNull: true,
   },

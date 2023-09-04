@@ -11,6 +11,7 @@ const {
       Invoice,
       PurchaseDetail,
       Purchase,
+      DeliveryExpense,
     },
   },
 } = require("../../models/index");
@@ -176,6 +177,36 @@ router.patch("/:id/switch-invoice", async (req, res, next) => {
     }
 
     res.json({ data: true });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
+
+router.patch("/:id/add-expenses", async (req, res, next) => {
+  try {
+    const { ExpenseId, qty, amount, unit, detailIds } = req.body;
+
+    const { id } = req.params;
+
+    const newDeliveryExpense = DeliveryExpense.build({
+      ExpenseId,
+      qty,
+      amount,
+      unit,
+    });
+    await newDeliveryExpense.save();
+
+    const deliveryDetails = await DeliveryDetail.findAll({
+      where: {
+        id: detailIds,
+        DeliveryId: id,
+      },
+    });
+
+    await newDeliveryExpense.addDeliveryDetails(deliveryDetails);
+
+    res.json({ data: newDeliveryExpense });
   } catch (error) {
     console.log(error);
     next(error);
