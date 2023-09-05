@@ -415,6 +415,24 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
+router.patch("/configure-overall-cost", async (req, res, next) => {
+  try {
+    const { productIds, splitCost } = req.body;
+
+    for (const id of productIds) {
+      const product = await Product.findByPk(id);
+
+      await product.update({
+        overallCost: product.cost + splitCost,
+      });
+    }
+
+    res.json({ message: "Success" });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch("/:id", async (req, res, next) => {
   try {
     const {

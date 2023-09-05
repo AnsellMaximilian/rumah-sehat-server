@@ -90,6 +90,70 @@ const getProfits = async (startDate, endDate) => {
   return { profits, suppliers, totals };
 };
 
+const getDetailedProfits = async (startDate, endDate) => {
+  const [totals] = await sequelize.query(
+    `
+      SELECT
+              SUM("DD"."price" * "DD"."qty") as "totalPrice",
+              SUM("DD"."qty") as "totalQty",
+              SUM(COALESCE("DD"."overallCost", "DD"."cost") * "DD"."qty") as "totalCost",
+              SUM(("DD"."price" * "DD"."qty") - (COALESCE("DD"."overallCost", "DD"."cost") * "DD"."qty")) as "profit"
+          FROM "Invoices" as "I"
+      INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
+      INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
+          AND "I"."date" >= '${startDate}'
+          AND "I"."date" <= '${endDate}'
+      `
+  );
+
+  const [profits] = await sequelize.query(
+    `
+      SELECT
+              "P"."name" as "product",
+              "DD"."price",
+              COALESCE("P"."overallCost", "P"."cost") as "cost",
+              "P"."SupplierId" as "supplierId",
+              "P"."id" as "productId",
+              "S"."name",
+              SUM("DD"."price" * "DD"."qty") as "totalPrice",
+              SUM("DD"."qty") as "totalQty",
+              SUM(COALESCE("DD"."overallCost", "DD"."cost") * "DD"."qty") as "totalCost",
+              SUM(("DD"."price" * "DD"."qty") - (COALESCE("DD"."overallCost", "DD"."cost") * "DD"."qty")) as "profit"
+          FROM "Invoices" as "I"
+      INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
+      INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
+      INNER JOIN "Products" as "P" ON "DD"."ProductId" = "P"."id"
+      INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
+          AND "I"."date" >= '${startDate}'
+          AND "I"."date" <= '${endDate}'
+      GROUP BY "product", "DD"."price", "P"."cost", "supplierId", "S"."name", "productId"
+      ORDER BY "product"
+      `
+  );
+
+  const [suppliers] = await sequelize.query(
+    `
+        SELECT
+              "P"."SupplierId" as "supplierId",
+              "S"."name",
+              SUM("DD"."price" * "DD"."qty") as "totalPrice",
+              SUM("DD"."qty") as "totalQty",
+              SUM(COALESCE("DD"."overallCost", "DD"."cost") * "DD"."qty") as "totalCost",
+              SUM(("DD"."price" * "DD"."qty") - (COALESCE("DD"."overallCost", "DD"."cost") * "DD"."qty")) as "profit"
+            FROM "Invoices" as "I"
+        INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
+        INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
+        INNER JOIN "Products" as "P" ON "DD"."ProductId" = "P"."id"
+        INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
+            AND "I"."date" >= '${startDate}'
+            AND "I"."date" <= '${endDate}'
+        GROUP BY "S"."name", "supplierId"
+        `
+  );
+
+  return { profits, suppliers, totals };
+};
+
 const getPurchaseTotals = async (startDate, endDate) => {
   const [purchaseTotals] = await sequelize.query(
     `
@@ -201,6 +265,18 @@ router.get("/profits", async (req, res, next) => {
     const { startDate, endDate } = req.query;
 
     const data = await getProfits(startDate, endDate);
+
+    res.json({ data: data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/detailed-profits", async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const data = await getDetailedProfits(startDate, endDate);
 
     res.json({ data: data });
   } catch (error) {

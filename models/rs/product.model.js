@@ -42,7 +42,7 @@ module.exports = (sequelize) => {
       defaultValue: null,
     },
     overallCost: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(12, 3),
       allowNull: true,
       default: 0,
       validate: {
