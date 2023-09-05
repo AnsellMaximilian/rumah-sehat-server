@@ -31,5 +31,22 @@ module.exports = (sequelize) => {
         return this.qty * this.amount;
       },
     },
+    totalItemQty: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        if (!this.DeliveryExpenseDetails) return 0;
+        return this.DeliveryExpenseDetails.reduce((sum, det) => {
+          return (
+            sum + (det.DeliveryDetail ? parseFloat(det.DeliveryDetail.qty) : 0)
+          );
+        }, 0);
+      },
+    },
+    totalSplitCost: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.totalAmount / this.totalItemQty;
+      },
+    },
   });
 };

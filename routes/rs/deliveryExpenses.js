@@ -22,44 +22,63 @@ router.get("/", async (req, res, next) => {
   try {
     const { deliveryId } = req.query;
 
-    if (deliveryId) {
-      const delivery = await Delivery.findByPk(deliveryId, {
-        include: [
-          {
-            model: DeliveryDetail,
-            include: [
-              {
-                model: DeliveryExpenseDetail,
-                include: [{ model: DeliveryExpense, include: [Expense] }],
-              },
-            ],
-          },
-          Customer,
-          DeliveryType,
-          {
-            model: Invoice,
-            include: [Customer, { model: Delivery, include: DeliveryDetail }],
-          },
-          Purchase,
-        ],
-      });
-      return res.json({
-        data: delivery.DeliveryDetails.reduce((allExpenses, detail) => {
-          return [
-            ...allExpenses,
-            ...detail.DeliveryExpenseDetails.filter(
-              (det) =>
-                !allExpenses.some((ex) => ex.id === det.DeliveryExpenseId)
-            ).map((det) => det.DeliveryExpense),
-          ];
-        }, []),
-      });
-    }
+    // if (deliveryId) {
+    //   const delivery = await Delivery.findByPk(deliveryId, {
+    //     include: [
+    //       {
+    //         model: DeliveryDetail,
+    //         include: [
+    //           {
+    //             model: DeliveryExpenseDetail,
+    //             include: [{ model: DeliveryExpense, include: [Expense] }],
+    //           },
+    //         ],
+    //       },
+    //       Customer,
+    //       DeliveryType,
+    //       {
+    //         model: Invoice,
+    //         include: [Customer, { model: Delivery, include: DeliveryDetail }],
+    //       },
+    //       Purchase,
+    //     ],
+    //   });
+    //   const expenses = delivery.DeliveryDetails.reduce(
+    //     (allExpenses, detail) => {
+    //       return [
+    //         ...allExpenses,
+    //         ...detail.DeliveryExpenseDetails.filter(
+    //           (det) =>
+    //             !allExpenses.some((ex) => ex.id === det.DeliveryExpenseId)
+    //         ).map((det) => det.DeliveryExpense),
+    //       ];
+    //     },
+    //     []
+    //   );
+    //   console.log(expenses);
+    //   return res.json({
+    //     data: expenses,
+    //   });
+    // }
 
     const deliveryExpenses = await DeliveryExpense.findAll({
-      include: [DeliveryDetail, Expense],
+      include: [
+        {
+          model: DeliveryExpenseDetail,
+          include: [{ model: DeliveryDetail, include: Delivery }],
+        },
+        Expense,
+      ],
     });
-    res.json({ data: deliveryExpenses });
+    res.json({
+      data: deliveryExpenses.filter(
+        (ex) =>
+          !!!deliveryId ||
+          ex.DeliveryExpenseDetails.every(
+            (exDet) => exDet.DeliveryDetail.DeliveryId
+          )
+      ),
+    });
   } catch (error) {
     next(error);
   }
