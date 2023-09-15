@@ -106,6 +106,7 @@ router.post("/", async (req, res, next) => {
       name,
       price,
       resellerPrice,
+      restockNumber,
       cost,
       overallCost,
       SupplierId,
@@ -118,6 +119,7 @@ router.post("/", async (req, res, next) => {
       name,
       price,
       resellerPrice,
+      restockNumber,
       cost,
       overallCost,
       SupplierId,
@@ -340,6 +342,7 @@ router.get("/stock-report", async (req, res, next) => {
       SELECT 
         "p"."name",
         "p"."id",
+        "p"."restockNumber",
         COALESCE(SUM("pd"."amount"), 0) as "totalIn",
         COALESCE(SUM("dd"."amount"), 0) as "totalOut",
         COALESCE(SUM("dr"."amount"), 0) as "totalDrawn",
@@ -390,7 +393,7 @@ router.get("/stock-report", async (req, res, next) => {
         ON "sa"."productId" = "p"."id"
       WHERE "p"."keepStockSince" is not null
       GROUP BY
-        "p"."name", "p"."id"
+        "p"."name", "p"."id", "p"."restockNumber"
       ORDER BY
         "p"."name" ASC
       `
@@ -439,6 +442,7 @@ router.patch("/:id", async (req, res, next) => {
       name,
       price,
       resellerPrice,
+      restockNumber,
       cost,
       overallCost,
       SupplierId,
@@ -456,6 +460,7 @@ router.patch("/:id", async (req, res, next) => {
         name,
         price,
         resellerPrice,
+        restockNumber,
         cost,
         overallCost,
         SupplierId,

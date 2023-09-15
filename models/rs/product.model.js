@@ -41,12 +41,30 @@ module.exports = (sequelize) => {
       allowNull: true,
       defaultValue: null,
     },
+    restockNumber: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        min: 0,
+      },
+    },
     overallCost: {
       type: DataTypes.DECIMAL(12, 3),
       allowNull: true,
       default: 0,
       validate: {
         min: 0,
+      },
+    },
+    getStockColors: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        const restockNum = this.restockNumber ? this.restockNumber : 0;
+        return {
+          red: restockNum,
+          orange: Math.ceil(restockNum + restockNum * 0.1667),
+          yellow: Math.ceil(restockNum + restockNum * 0.3333),
+        };
       },
     },
   });
