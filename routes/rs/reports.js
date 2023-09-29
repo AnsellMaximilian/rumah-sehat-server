@@ -111,7 +111,7 @@ const getDetailedProfits = async (startDate, endDate) => {
       SELECT
               "P"."name" as "product",
               "DD"."price",
-              COALESCE("P"."overallCost", "P"."cost") as "cost",
+              COALESCE("DD"."overallCost", "DD"."cost") as "cost",
               "P"."SupplierId" as "supplierId",
               "P"."id" as "productId",
               "S"."name",
@@ -126,7 +126,7 @@ const getDetailedProfits = async (startDate, endDate) => {
       INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
           AND "I"."date" >= '${startDate}'
           AND "I"."date" <= '${endDate}'
-      GROUP BY "product", "DD"."price", "P"."cost", "supplierId", "S"."name", "productId"
+      GROUP BY "product", "DD"."price", "P"."cost", "supplierId", "S"."name", "productId", "DD"."cost", "DD"."overallCost"
       ORDER BY "product"
       `
   );
