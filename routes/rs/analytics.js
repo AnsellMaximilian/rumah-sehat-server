@@ -126,7 +126,7 @@ router.get("/", async (req, res, next) => {
     }
 
     if (CustomerId) {
-      let tempClause = `"d"."CustomerId" = ${CustomerId}`;
+      let tempClause = `"d"."CustomerId" = ${CustomerId} `;
       if (!whereApplied) {
         whereClause = "WHERE " + tempClause;
         whereApplied = true;
@@ -148,6 +148,7 @@ router.get("/", async (req, res, next) => {
       `
         SELECT
             "d"."date" as "date",
+            SUM("dd"."qty") as "qty",
             SUM("dd"."price" * "dd"."qty") as "revenue", 
             SUM(COALESCE("dd"."overallCost", "dd"."cost") * "dd"."qty") as "expense",
             SUM(("dd"."price" * "dd"."qty") - (COALESCE("dd"."overallCost", "dd"."cost") * "dd"."qty")) as "profit" 
