@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report</title>
+    {{> reset}}
+    {{> reportStyle}}
+  </head>
+  <body>
+    <main>
+      <article class="report">
+        <header>
+          <div>
+            <h1>TAGIHAN</h1>
+            <h2>SUMMARY</h2>
+          </div>
+          <div>
+            <h3>{{startDate}} - {{endDate}}</h3>
+          </div>
+        </header>
+        <main>
+          <table>
+            <thead>
+              <tr>
+                <th class="left">Supplier</th>
+                <th class="right">Subtotal</th>
+                <th class="right">Ongkir</th>
+                <th class="right">Penyesuaian</th>
+                <th class="right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              {{#each purchaseTotals}}
+              <tr>
+                <td>{{this.supplierName}}</td>
+                <td class="right">{{formatRP this.subtotal}}</td>
+                <td class="right">{{formatRP this.costTotal}}</td>
+                <td class="right">{{formatRP this.adjustmentTotal}}</td>
+                <td class="right">{{formatRP this.total}}</td>
+
+              </tr>
+              {{/each}}
+              
+            </tbody>
+          </table>
+        </main>
+      </article>
+
+      {{> separator}}
+
+      <article class="report">
+        <header>
+          <div>
+            <h1>TAGIHAN</h1>
+            <h2>Detail</h2>
+          </div>
+          <div>
+            <h3>{{startDate}} - {{endDate}}</h3>
+          </div>
+        </header>
+        <main>
+          <table>
+            <thead>
+              <tr>
+                <th class="left">Supplier</th>
+                <th class="right center-v" rowspan="2">Cost</th>
+                <th class="center center-v" rowspan="2">Qty</th>
+                <th class="right center-v" rowspan="2">Total Cost</th>
+              </tr>
+              <tr>
+                <th class="left" style="text-indent: 1rem">Product</th>
+              </tr>
+            </thead>
+            <tbody>
+            {{#each purchaseTotals}}
+              <tr class="bg-light bold">
+                <td>{{this.supplierName}}</td>
+                <td class="right"></td>
+                <td class="center"></td>
+                <td class="right">{{formatRP this.total}}</td>
+              </tr>
+              {{#each this.products}}
+              <tr>
+                <td style="text-indent: 1rem">{{this.product}}</td>
+                <td class="right">{{formatRP this.price}}</td>
+                <td class="center">{{parseFloat this.totalQty}}</td>
+                <td class="right">{{formatRP this.totalPrice}}</td>
+              </tr>
+              {{/each}}
+
+              {{#if this.hasAdjustments}}
+                <tr>
+                  <td style="text-indent: 1rem" class="bold" colspan="4">Penyesuaian</td>
+                </tr>
+                {{#each this.supplierAdjustments}}
+                <tr>
+                  <td style="text-indent: 2rem">{{this.description}}</td>
+                  <td class="right" colspan="3">{{formatRP this.amount}}</td>
+                </tr>
+                {{/each}}
+              {{/if}}
+
+              {{#if this.hasDeliveryCost}}
+                <tr>
+                  <td style="text-indent: 1rem" class="bold" colspan="3">Ongkir</td>
+                  <td class="right">{{formatRP this.costTotal}}</td>
+
+                </tr>
+              {{/if}}
+            {{/each}}
+            </tbody>
+            <tfoot>
+              <tr class="bg-main bold">
+                <th scope="row" class="right">TOTALS</th>
+                <td class="right">Rp190.000</td>
+                <td class="right"></td>
+                <td class="right">Rp190.000</td>
+              </tr>
+            </tfoot>
+          </table>
+        </main>
+      </article>
+
+      {{> separator}}
+
+
+      <article class="report">
+        <header>
+          <div>
+            <h1>Profits</h1>
+            <h2>SUMMARY</h2>
+          </div>
+          <div>
+            <h3>{{startDate}} - {{endDate}}</h3>
+          </div>
+        </header>
+        <main>
+          <table>
+            <thead>
+              <tr>
+                <th class="left">Supplier</th>
+                <th class="right">Total Cost</th>
+                <th class="right">Total Sales</th>
+                <th class="right">Profit</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+                {{#each suppliers}}
+                <tr>
+                    <td>{{this.name}}</td>
+                    <td class="right">{{formatRP this.totalCost}}</td>
+                    <td class="right">{{formatRP this.totalPrice}}</td>
+                    <td class="right">{{formatRP this.profit}}</td>
+                </tr>
+                {{/each}}
+              
+            </tbody>
+            <tfoot>
+              <tr class="bg-main bold">
+                <th scope="row" class="right">TOTALS</th>
+                <td class="right">{{formatRP totals.totalCost}}</td>
+                <td class="right">{{formatRP totals.totalPrice}}</td>
+                <td class="right">{{formatRP totals.profit}}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </main>
+      </article>
+
+      {{> separator}}
+
+
+      <article class="report">
+        <header>
+          <div>
+            <h1>Profits</h1>
+            <h2>Detail</h2>
+          </div>
+          <div>
+            <h3>{{startDate}} - {{endDate}}</h3>
+          </div>
+        </header>
+        <main>
+          <table>
+            <thead>
+              <tr>
+                <th class="left">Supplier</th>
+                <th class="right center-v" rowspan="2">Buy Price</th>
+                <th class="right center-v" rowspan="2">Sale Price</th>
+                <th class="center center-v" rowspan="2">Qty</th>
+                <th class="right center-v" rowspan="2">Total Cost</th>
+                <th class="right center-v" rowspan="2">Total Sales</th>
+                <th class="right center-v" rowspan="2">Profit</th>
+              </tr>
+              <tr>
+                <th class="left" style="text-indent: 1rem">Product</th>
+              </tr>
+            </thead>
+            <tbody>
+            {{#each suppliers}}
+              <tr class="bg-light bold">
+                <td>{{this.name}}</td>
+                <td class="right"></td>
+                <td class="right"></td>
+                <td class="center">{{parseFloat this.totalQty}}</td>
+                <td class="right">{{formatRP this.totalCost}}</td>
+                <td class="right">{{formatRP this.totalPrice}}</td>
+                <td class="right">{{formatRP this.profit}}</td>
+              </tr>
+              {{#each this.products}}
+              <tr>
+                <td style="text-indent: 1rem">{{this.product}}</td>
+                <td class="right">{{formatRP this.cost}}</td>
+                <td class="right">{{formatRP this.price}}</td>
+                <td class="center">{{parseFloat this.totalQty}}</td>
+                <td class="right">{{formatRP this.totalCost}}</td>
+                <td class="right">{{formatRP this.totalPrice}}</td>
+                <td class="right">{{formatRP this.profit}}</td>
+              </tr>
+              {{/each}}
+
+            {{/each}}
+            </tbody>
+            <tfoot>
+              <tr class="bg-main bold">
+                <th scope="row" colspan="4" class="right">TOTALS</th>
+                <td class="right">{{formatRP totals.totalCost}}</td>
+                <td class="right">{{formatRP totals.totalPrice}}</td>
+                <td class="right">{{formatRP totals.profit}}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </main>
+      </article>
+      {{> separator}}
+
+    </main>
+  </body>
+</html>

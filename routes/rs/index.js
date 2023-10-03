@@ -14,6 +14,7 @@ router.use("/purchase-adjustments", require("./purchaseAdjustments"));
 router.use("/purchase-invoices", require("./purchaseInvoices"));
 router.use("/reports", require("./reports"));
 router.use("/exports", require("./exports"));
+router.use("/analytics", require("./analytics"));
 router.use("/seed", require("./seed"));
 
 module.exports = router;

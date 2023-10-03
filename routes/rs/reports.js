@@ -412,6 +412,83 @@ router.get("/print", async (req, res, next) => {
   }
 });
 
+router.get("/print-overall", async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const { suppliers, totals, profits } = await getDetailedProfits(
+      startDate,
+      endDate
+    );
+
+    const {
+      purchaseTotals,
+      costTotals,
+      adjustments,
+      products,
+      purchaseAdjustments,
+      purchaseCosts,
+    } = await getPurchaseTotals(startDate, endDate);
+
+    const data = {
+      suppliers: suppliers.map((sup) => {
+        return {
+          ...sup,
+          products: profits.filter(
+            (profit) => profit.supplierId === sup.supplierId
+          ),
+        };
+      }),
+      totals: totals[0],
+      profits,
+      startDate: moment(startDate).format("DD MMM YYYY"),
+      endDate: moment(endDate).format("DD MMM YYYY"),
+      purchaseTotals: purchaseTotals.map((pt) => {
+        const supplierDeliveries = costTotals.find(
+          (ct) => ct.supplierId === pt.supplierId
+        );
+        const costTotal = supplierDeliveries?.costTotal || 0;
+        const adjustmentTotal =
+          adjustments.find((adj) => adj.supplierId === pt.supplierId)
+            ?.adjustmentTotal || 0;
+
+        const supplierAdjustments = purchaseAdjustments.filter(
+          (pa) => pa.supplierId === pt.supplierId
+        );
+        return {
+          ...pt,
+          subtotal: pt.total,
+          products: products.filter(
+            (product) => product.supplierId === pt.supplierId
+          ),
+          supplierAdjustments: supplierAdjustments,
+          hasAdjustments: supplierAdjustments.length > 0,
+          costTotal,
+          hasDeliveryCost: !!parseInt(costTotal),
+          supplierDeliveries,
+          adjustmentTotal,
+          total:
+            parseInt(costTotal) +
+            parseInt(pt.total) +
+            parseInt(adjustmentTotal),
+        };
+      }),
+      costTotals,
+      adjustments,
+      products,
+    };
+
+    const pdfStream = await createPDFStream(
+      path.join(__dirname, "..", "..", "templates", "rs-report-overall.hbs"),
+      data
+    );
+
+    pdfStream.pipe(res);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/products", async (req, res, next) => {
   try {
     const { startDate, endDate, productId } = req.query;
