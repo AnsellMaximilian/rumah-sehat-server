@@ -104,6 +104,9 @@ router.get("/", async (req, res, next) => {
       invoiceStartDate,
       invoiceEndDate,
       ProductId,
+      customerIds,
+      productIds,
+      SupplierId,
     } = req.query;
 
     let whereApplied = false;
@@ -125,8 +128,8 @@ router.get("/", async (req, res, next) => {
       }
     }
 
-    if (CustomerId) {
-      let tempClause = `"d"."CustomerId" = ${CustomerId} `;
+    if (productIds) {
+      let tempClause = `"dd"."ProductId" IN (${productIds}) `;
       if (!whereApplied) {
         whereClause = "WHERE " + tempClause;
         whereApplied = true;
@@ -135,8 +138,8 @@ router.get("/", async (req, res, next) => {
       }
     }
 
-    if (ProductId) {
-      let tempClause = `"dd"."ProductId" = ${ProductId} `;
+    if (customerIds) {
+      let tempClause = `"d"."CustomerId" IN (${customerIds}) `;
       if (!whereApplied) {
         whereClause = "WHERE " + tempClause;
         whereApplied = true;
@@ -144,6 +147,17 @@ router.get("/", async (req, res, next) => {
         whereClause = whereClause + "AND " + tempClause;
       }
     }
+
+    if (SupplierId) {
+      let tempClause = `"p"."SupplierId" IN (${SupplierId}) `;
+      if (!whereApplied) {
+        whereClause = "WHERE " + tempClause;
+        whereApplied = true;
+      } else {
+        whereClause = whereClause + "AND " + tempClause;
+      }
+    }
+
     const [analytics] = await sequelize.query(
       `
         SELECT
