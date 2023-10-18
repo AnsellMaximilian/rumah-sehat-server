@@ -11,6 +11,7 @@ const modelDefiners = [
   // Rumah Sehat
   require("./rs/product.model"),
   require("./rs/stockAdjustment.model"),
+  require("./rs/stockMatch.model"),
   require("./rs/draw.model"),
   require("./rs/supplier.model"),
   require("./rs/productCategory.model"),
@@ -68,6 +69,7 @@ const {
   Supplier,
   Product,
   StockAdjustment,
+  StockMatch,
   Draw,
   ProductCategory,
   Delivery,
@@ -474,6 +476,17 @@ Product.hasMany(StockAdjustment, {
 });
 
 StockAdjustment.belongsTo(Product, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+// Stock Matches
+Product.hasMany(StockMatch, {
+  onDelete: "CASCADE",
+});
+
+StockMatch.belongsTo(Product, {
   foreignKey: {
     allowNull: false,
   },

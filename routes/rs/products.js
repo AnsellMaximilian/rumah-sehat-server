@@ -15,6 +15,7 @@ const {
       Draw,
       Customer,
       StockAdjustment,
+      StockMatch,
     },
   },
   sequelize,
@@ -175,6 +176,26 @@ router.post("/:id/adjust-stock", async (req, res, next) => {
   }
 });
 
+router.post("/:id/match-stock", async (req, res, next) => {
+  try {
+    const { qty, date, description } = req.body;
+
+    const { id } = req.params;
+
+    const newMatch = StockMatch.build({
+      qty,
+      date,
+      ProductId: id,
+      description,
+    });
+    await newMatch.save();
+
+    res.json({ message: "Success", data: newMatch });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/:id/stock", async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -260,6 +281,22 @@ router.get("/:id/stock", async (req, res, next) => {
     }
 
     res.json({ data: stock });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:id/stock-matches", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const matches = await StockMatch.findAll({
+      where: {
+        ProductId: id,
+      },
+      order: [["date", "DESC"]],
+    });
+
+    res.json({ data: matches });
   } catch (error) {
     next(error);
   }
