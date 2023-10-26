@@ -293,7 +293,10 @@ router.get("/:id/stock-matches", async (req, res, next) => {
       where: {
         ProductId: id,
       },
-      order: [["date", "DESC"]],
+      order: [
+        ["date", "DESC"],
+        ["createdAt", "DESC"],
+      ],
     });
 
     res.json({ data: matches });
