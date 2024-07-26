@@ -18,7 +18,8 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { unInvoiced, CustomerId, startDate, endDate } = req.query;
+    const { unInvoiced, CustomerId, startDate, endDate, DeliveryTypeIds } =
+      req.query;
 
     const whereClause = {};
 
@@ -41,6 +42,12 @@ router.get("/", async (req, res, next) => {
 
     if (unInvoiced === "true") {
       whereClause.InvoiceId = null;
+    }
+
+    if (DeliveryTypeIds && DeliveryTypeIds.length > 0) {
+      whereClause.DeliveryTypeId = {
+        [Op.in]: DeliveryTypeIds.split(","),
+      };
     }
 
     const deliveries = await Delivery.findAll({
