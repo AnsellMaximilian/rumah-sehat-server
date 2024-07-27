@@ -23,5 +23,9 @@ module.exports = (sequelize) => {
         len: 1,
       },
     },
+    order: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   });
 };
