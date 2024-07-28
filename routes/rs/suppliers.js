@@ -29,6 +29,7 @@ router.get("/active", async (req, res, next) => {
   try {
     const suppliers = await Supplier.findAll({
       include: [Product, PurchaseAdjustment],
+      order: [["order", "DESC"]],
     });
     res.json({
       data: suppliers.filter((supplier) => supplier.Products.length > 0),
