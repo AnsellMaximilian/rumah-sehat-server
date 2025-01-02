@@ -12,6 +12,7 @@ const {
       DrIdLoan,
     },
   },
+  sequelize,
 } = require("../../../models/index");
 
 router.get("/", async (req, res, next) => {
@@ -178,6 +179,68 @@ router.get("/:id/history", async (req, res, next) => {
         data: { deliveryDetails, adjustments, loans },
       });
     }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/stock-report", async (req, res, next) => {
+  try {
+    const [stock] = await sequelize.query(
+      `
+      SELECT 
+        "p"."name",
+        "p"."id",
+        COALESCE(SUM("dd"."amount"), 0) as "totalOut",
+        COALESCE(SUM("sa"."amount"), 0) as "totalAdjusted",
+        COALESCE(SUM("lo"."amount"), 0) as "totalLoaned",
+        (COALESCE(SUM("dd"."amount"), 0) + COALESCE(SUM("sa"."amount"), 0) + COALESCE(SUM("lo"."amount"), 0)) as "stock"
+      FROM "DrIdItems" as "p"
+      LEFT JOIN
+        (
+          SELECT 
+            "DrIdItems"."id" as "itemId", sum("DrIdDeliveryDetails"."qty") as "amount"
+          FROM "DrIdDeliveryDetails"
+          inner join "DrIdDeliveries" on "DrIdDeliveries"."id" = "DrIdDeliveryDetails"."DrIdDeliveryId"
+          inner join "DrIdItems" on "DrIdDeliveryDetails"."DrIdItemId" = "DrIdItems"."id"
+          Where "DrIdItems"."keepStockSince" is not null and "DrIdDeliveries"."date" >= "DrIdItems"."keepStockSince"
+          group by "itemId"
+        ) as "dd"
+        ON "dd"."itemId" = "p"."id"
+      LEFT JOIN
+        (
+          SELECT 
+            "DrIdItems"."id" as "itemId", sum("DrIdStockAdjustments"."amount") as "amount"
+          FROM "DrIdStockAdjustments"
+          inner join "DrIdItems" on "DrIdStockAdjustments"."DrIdItemId" = "DrIdItems"."id"
+          Where "DrIdItems"."keepStockSince" is not null and "DrIdStockAdjustments"."date" >= "DrIdItems"."keepStockSince"
+          group by "itemId"
+        ) as "sa"
+        ON "sa"."itemId" = "p"."id"
+      LEFT JOIN
+        (
+          SELECT 
+            "DrIdItems"."id" as "itemId", 
+            SUM(CASE 
+                    WHEN "DrIdLoans"."returnDate" IS NOT NULL THEN 0
+                    WHEN "DrIdLoans"."lendType" = 'lend' THEN -"DrIdLoans"."qty"
+                    ELSE "DrIdLoans"."qty"
+                END) as "amount"
+          FROM "DrIdLoans"
+          INNER JOIN "DrIdItems" on "DrIdLoans"."DrIdItemId" = "DrIdItems"."id"
+          WHERE "DrIdItems"."keepStockSince" is not null AND "DrIdLoans"."date" >= "DrIdItems"."keepStockSince"
+          GROUP BY "itemId"
+        ) as "lo"
+        ON "lo"."itemId" = "p"."id"
+      WHERE "p"."keepStockSince" is not null
+      GROUP BY
+        "p"."name", "p"."id"
+      ORDER BY
+        "p"."name" ASC
+      `
+    );
+
+    res.json({ data: stock });
   } catch (error) {
     next(error);
   }
