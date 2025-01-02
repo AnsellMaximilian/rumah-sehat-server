@@ -53,4 +53,30 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.post("/bulk-draw", async (req, res, next) => {
+  try {
+    const { draws } = req.body;
+
+    const savedDraws = [];
+
+    for (const draw of draws) {
+      const { amount, date, description, ProductId } = draw;
+
+      const newDraw = Draw.build({
+        amount,
+        date,
+        ProductId,
+        description,
+      });
+      await newDraw.save();
+
+      savedDraws.push(newDraw);
+    }
+
+    res.json({ message: "Success", data: savedDraws });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
