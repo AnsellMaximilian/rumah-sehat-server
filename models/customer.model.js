@@ -143,5 +143,10 @@ module.exports = (sequelize) => {
         );
       },
     },
+
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   });
 };

@@ -25,8 +25,15 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { fullName, phone, address, note, RegionId, withDrDetails } =
-      req.query;
+    const {
+      fullName,
+      phone,
+      address,
+      note,
+      RegionId,
+      withDrDetails,
+      includeInactive,
+    } = req.query;
     const whereClause = {};
 
     if (fullName) {
@@ -55,6 +62,10 @@ router.get("/", async (req, res, next) => {
       whereClause.phone = {
         [Op.iLike]: `%${phone}%`,
       };
+    }
+
+    if (!includeInactive) {
+      whereClause.isActive = true;
     }
 
     const drDetails = {};
@@ -203,6 +214,55 @@ router.get("/:id/designated-sales", async (req, res, next) => {
     if (customer === null) throw "No more available designated sales.";
     if (!customer) throw `Can't find item with id ${id}`;
     res.json({ data: customer.PurchaseDetails });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:id/cycle-active-status", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const customer = await Customer.findByPk(id, {
+      include: [
+        { model: Region },
+        { model: Adjustment },
+        {
+          model: DrInvoice,
+          include: [
+            { model: Customer },
+            { model: DrDiscountModel },
+            {
+              model: DrIdDelivery,
+              include: [
+                { model: DrIdDeliveryDetail, include: DrIdItem },
+                Customer,
+                DrDiscountModel,
+              ],
+            },
+            {
+              model: DrSgDelivery,
+              include: [
+                { model: DrSgDeliveryDetail, include: DrSgItem },
+                Customer,
+                DrDiscountModel,
+              ],
+            },
+            {
+              model: DrMyDelivery,
+              include: [
+                { model: DrMyDeliveryDetail, include: DrMyItem },
+                Customer,
+                DrDiscountModel,
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    customer.update({
+      isActive: !customer.isActive,
+    });
+    res.json({ data: customer });
   } catch (error) {
     next(error);
   }
