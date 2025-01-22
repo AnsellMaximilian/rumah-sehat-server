@@ -7,7 +7,23 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const items = await DrMyItem.findAll();
+    const { name, activeStatus } = req.query;
+
+    const whereClause = {};
+
+    if (name) {
+      whereClause.name = {
+        [Op.iLike]: `%${name}%`,
+      };
+    }
+
+    if (!activeStatus) {
+      whereClause.isActive = true;
+    } else if (activeStatus !== "all")
+      whereClause.isActive = activeStatus === "active";
+    const items = await DrMyItem.findAll({
+      where: whereClause,
+    });
     res.json({ data: items });
   } catch (error) {
     next(error);
@@ -32,6 +48,19 @@ router.get("/:id", async (req, res, next) => {
     const { id } = req.params;
     const item = await DrMyItem.findByPk(id);
     if (!item) throw `Can't find item with id ${id}`;
+    res.json({ data: item });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:id/cycle-active-status", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const item = await DrMyItem.findByPk(id);
+    item.update({
+      isActive: !item.isActive,
+    });
     res.json({ data: item });
   } catch (error) {
     next(error);

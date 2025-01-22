@@ -30,5 +30,9 @@ module.exports = (sequelize) => {
         min: 0,
       },
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   });
 };
