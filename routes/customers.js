@@ -32,7 +32,7 @@ router.get("/", async (req, res, next) => {
       note,
       RegionId,
       withDrDetails,
-      includeInactive,
+      activeStatus,
     } = req.query;
     const whereClause = {};
 
@@ -64,9 +64,10 @@ router.get("/", async (req, res, next) => {
       };
     }
 
-    if (!includeInactive) {
+    if (!activeStatus) {
       whereClause.isActive = true;
-    }
+    } else if (activeStatus !== "all")
+      whereClause.isActive = activeStatus === "active";
 
     const drDetails = {};
     if (withDrDetails) {
