@@ -26,7 +26,7 @@ const {
 } = require("../../helpers/pdfGeneration");
 router.get("/", async (req, res, next) => {
   try {
-    const { name, SupplierId, ProductCategoryId } = req.query;
+    const { name, SupplierId, ProductCategoryId, activeStatus } = req.query;
     const whereClause = {};
 
     if (name) {
@@ -42,6 +42,11 @@ router.get("/", async (req, res, next) => {
     if (ProductCategoryId) {
       whereClause.ProductCategoryId = ProductCategoryId;
     }
+
+    if (!activeStatus) {
+      whereClause.isActive = true;
+    } else if (activeStatus !== "all")
+      whereClause.isActive = activeStatus === "active";
 
     const products = await Product.findAll({
       include: [ProductCategory, Supplier],
@@ -471,6 +476,19 @@ router.patch("/configure-overall-cost", async (req, res, next) => {
     }
 
     res.json({ message: "Success" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:id/cycle-active-status", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findByPk(id);
+    product.update({
+      isActive: !product.isActive,
+    });
+    res.json({ data: product });
   } catch (error) {
     next(error);
   }
