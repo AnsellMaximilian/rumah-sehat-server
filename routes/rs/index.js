@@ -17,5 +17,6 @@ router.use("/exports", require("./exports"));
 router.use("/analytics", require("./analytics"));
 router.use("/seed", require("./seed"));
 router.use("/playground", require("./playground"));
+router.use("/stock-adjustments", require("./stockAdjustments"));
 
 module.exports = router;
