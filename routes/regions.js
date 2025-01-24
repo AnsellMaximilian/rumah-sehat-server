@@ -1,85 +1,102 @@
 const router = require("express").Router();
+const { Op } = require("sequelize");
+
 const {
   sequelize: {
-    models: { Region },
+    models: { Region, Customer },
   },
 } = require("../models/index");
 
 router.get("/", async (req, res, next) => {
   try {
-    const regions = await Region.findAll();
+    const { name } = req.query;
+    const whereClause = {};
+
+    if (name) {
+      whereClause.name = {
+        [Op.iLike]: `%${name}%`,
+      };
+    }
+
+    const regions = await Region.findAll({
+      where: whereClause,
+      include: [Customer],
+    });
     res.json({ data: regions });
   } catch (error) {
     next(error);
   }
 });
 
-// router.post("/", async (req, res, next) => {
-//   try {
-//     const { fullName, address, phone, rsMember, receiveDrDiscount } = req.body;
+router.post("/", async (req, res, next) => {
+  try {
+    const { name } = req.body;
 
-//     const newCustomer = Customer.build({
-//       fullName,
-//       address,
-//       phone,
-//       rsMember,
-//       receiveDrDiscount,
-//     });
-//     await newCustomer.save();
+    const newRegion = Region.build({
+      name,
+    });
+    await newRegion.save();
 
-//     res.json({ message: "Success", data: newCustomer });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+    res.json({ message: "Success", data: newRegion });
+  } catch (error) {
+    next(error);
+  }
+});
 
-// router.get("/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const customer = await Customer.findByPk(id);
-//     if (!customer) throw `Can't find item with id ${id}`;
-//     res.json({ data: customer });
-//   } catch (error) {
-//     res.json({ error });
-//   }
-// });
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const region = await Region.findByPk(id, { include: [Customer] });
+    if (!region) throw `Can't find item with id ${id}`;
+    res.json({ data: region });
+  } catch (error) {
+    res.json({ error });
+  }
+});
 
-// router.patch("/:id", async (req, res) => {
-//   try {
-//     const { fullName, address, phone, rsMember, receiveDrDiscount } = req.body;
-//     const { id } = req.params;
+router.patch("/:id", async (req, res) => {
+  try {
+    const { name } = req.body;
+    const { id } = req.params;
 
-//     const customer = await Customer.findByPk(id);
+    const region = await Region.findByPk(id);
 
-//     await customer.update(
-//       { fullName, address, phone, rsMember, receiveDrDiscount },
-//       {
-//         where: {
-//           id: id,
-//         },
-//       }
-//     );
+    await region.update(
+      { name },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
 
-//     res.json({ data: customer });
-//   } catch (error) {
-//     res.json({ error });
-//   }
-// });
+    res.json({ data: region });
+  } catch (error) {
+    res.json({ error });
+  }
+});
 
-// router.delete("/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const customer = await Customer.findByPk(id);
-//     await customer.destroy({
-//       where: {
-//         id: id,
-//       },
-//     });
-//     res.json({ data: customer });
-//   } catch (error) {
-//     res.json({ error });
-//   }
-// });
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const region = await Region.findByPk(id, {
+      include: [Customer],
+    });
+
+    console.log({ region, length: region.Customers.length });
+
+    if (region.Customers.length > 0)
+      throw `Can't destroy region. ${region.Customers.length} in ${region.name} region.`;
+    await region.destroy({
+      where: {
+        id: id,
+      },
+    });
+    res.json({ data: region });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // // DR SECRET
 // router.get("/:id/dr/id/deliveries", async (req, res) => {
