@@ -78,15 +78,39 @@ const getPurchaseTotals = async (startDate, endDate, unpaidFilter) => {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { SupplierId, invoiced, startDate, endDate } = req.query;
+    const {
+      SupplierId,
+      invoiced,
+      startDate,
+      endDate,
+
+      paid,
+      invoiceStartDate,
+      invoiceEndDate,
+      filterId,
+      purchaseInvoiceId,
+    } = req.query;
     const whereClause = {};
+    const invoiceWhereClause = {};
+
+    if (filterId && isNaN(filterId)) {
+      throw `ID ${filterId} must be a number.`;
+    }
+
+    if (purchaseInvoiceId && isNaN(purchaseInvoiceId)) {
+      throw `Purchase Invoice ID ${purchaseInvoiceId} must be a number.`;
+    }
+
+    if (filterId) {
+      whereClause.id = parseInt(filterId, 10);
+    }
 
     if (SupplierId) {
       whereClause.SupplierId = SupplierId;
     }
 
     if (invoiced === "true") {
-      whereClause.PurchaeInvoiceId = {
+      whereClause.PurchaseInvoiceId = {
         [Op.not]: null,
       };
     } else if (invoiced === "false") {
@@ -105,8 +129,43 @@ router.get("/", async (req, res, next) => {
         [Op.lte]: endDate,
       };
     }
+
+    // PURCHASE INVOICE
+    if (purchaseInvoiceId) {
+      invoiceWhereClause.id = parseInt(purchaseInvoiceId, 10);
+    }
+
+    if (invoiceStartDate) {
+      invoiceWhereClause.date = {
+        [Op.gte]: invoiceStartDate,
+      };
+    }
+
+    if (invoiceEndDate) {
+      invoiceWhereClause.date = {
+        ...invoiceWhereClause.date,
+        [Op.lte]: invoiceEndDate,
+      };
+    }
+
+    if (paid === "false") {
+      invoiceWhereClause.paid = false;
+    } else if (paid === "true") {
+      invoiceWhereClause.paid = true;
+    }
+
     const purchases = await Purchase.findAll({
-      include: [PurchaseDetail, Supplier, Delivery, PurchaseInvoice],
+      include: [
+        PurchaseDetail,
+        Supplier,
+        Delivery,
+        {
+          model: PurchaseInvoice,
+          ...(Object.keys(invoiceWhereClause).length > 0
+            ? { where: invoiceWhereClause }
+            : {}),
+        },
+      ],
       where: whereClause,
     });
     res.json({ data: purchases });
