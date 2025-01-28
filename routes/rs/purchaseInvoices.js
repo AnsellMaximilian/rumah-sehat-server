@@ -20,9 +20,25 @@ const moment = require("moment");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { SupplierId, startDate, endDate, paid } = req.query;
+    const {
+      SupplierId,
+      startDate,
+      endDate,
+      paid,
+
+      deliveriesStartDate,
+      deliveriesEndDate,
+      filterId,
+    } = req.query;
 
     const whereClause = {};
+
+    const deliveriesWhereClause = {};
+
+    if (filterId && isNaN(filterId)) {
+      throw `ID ${filterId} must be a number.`;
+    }
+
     if (startDate) {
       whereClause.date = {
         [Op.gte]: startDate,
@@ -36,18 +52,42 @@ router.get("/", async (req, res, next) => {
       };
     }
 
+    if (filterId) {
+      whereClause.id = parseInt(filterId, 10);
+    }
+
     if (SupplierId) {
       whereClause.SupplierId = SupplierId;
     }
 
     if (paid === "false") {
       whereClause.paid = false;
+    } else if (paid === "true") {
+      whereClause.paid = true;
     }
+
+    // DELIVERIES
+    if (deliveriesStartDate) {
+      deliveriesWhereClause.date = {
+        [Op.gte]: deliveriesStartDate,
+      };
+    }
+
+    if (deliveriesEndDate) {
+      deliveriesWhereClause.date = {
+        ...deliveriesWhereClause.date,
+        [Op.lte]: deliveriesEndDate,
+      };
+    }
+
     const purchases = await PurchaseInvoice.findAll({
       include: [
         {
           model: Purchase,
           include: [PurchaseDetail],
+          ...(Object.keys(deliveriesWhereClause).length > 0
+            ? { where: deliveriesWhereClause }
+            : {}),
         },
         { model: Supplier },
       ],
