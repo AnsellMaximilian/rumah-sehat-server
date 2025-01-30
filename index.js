@@ -27,6 +27,7 @@ app.use("/expenditures", require("./routes/expenditures"));
 app.use("/transactions", require("./routes/transactions"));
 app.use("/dr", require("./routes/dr"));
 app.use("/rs", require("./routes/rs"));
+app.use("/info", require("./routes/info"));
 
 // error handler
 app.use(function (err, req, res, next) {
