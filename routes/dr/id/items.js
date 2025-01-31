@@ -10,6 +10,7 @@ const {
       DrIdDelivery,
       Customer,
       DrIdLoan,
+      DrIdStockMatch,
     },
   },
   sequelize,
@@ -80,6 +81,26 @@ router.post("/:id/adjust-stock", async (req, res, next) => {
   }
 });
 
+router.post("/:id/match-stock", async (req, res, next) => {
+  try {
+    const { qty, date, description } = req.body;
+
+    const { id } = req.params;
+
+    const newMatch = DrIdStockMatch.build({
+      qty,
+      date,
+      DrIdItemId: id,
+      description,
+    });
+    await newMatch.save();
+
+    res.json({ message: "Success", data: newMatch });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/:id/stock", async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -145,6 +166,25 @@ router.get("/:id/stock", async (req, res, next) => {
     }
 
     res.json({ data: stock });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:id/stock-matches", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const matches = await DrIdStockMatch.findAll({
+      where: {
+        DrIdItemId: id,
+      },
+      order: [
+        ["date", "DESC"],
+        ["createdAt", "DESC"],
+      ],
+    });
+
+    res.json({ data: matches });
   } catch (error) {
     next(error);
   }

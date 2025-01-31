@@ -43,6 +43,9 @@ const modelDefiners = [
   require("./dr/id/loan.model"),
   require("./dr/sg/stockAdjustment.model"),
   require("./dr/sg/loan.model"),
+
+  require("./dr/id/stockMatch.model"),
+  require("./dr/sg/stockMatch.model"),
 ];
 
 const sequelize = new Sequelize(
@@ -102,6 +105,9 @@ const {
   DrIdLoan,
   DrSgStockAdjustment,
   DrSgLoan,
+
+  DrIdStockMatch,
+  DrSgStockMatch,
 } = sequelize.models;
 
 Region.hasMany(Customer);
@@ -487,6 +493,27 @@ Product.hasMany(StockMatch, {
 });
 
 StockMatch.belongsTo(Product, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+// DRS Stock Matches
+DrIdItem.hasMany(DrIdStockMatch, {
+  onDelete: "CASCADE",
+});
+
+DrIdStockMatch.belongsTo(DrIdItem, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrSgItem.hasMany(DrSgStockMatch, {
+  onDelete: "CASCADE",
+});
+
+DrSgStockMatch.belongsTo(DrSgItem, {
   foreignKey: {
     allowNull: false,
   },
