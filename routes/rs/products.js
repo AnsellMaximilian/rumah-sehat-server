@@ -466,8 +466,14 @@ router.get("/stock-report", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { excludePurchases, excludeDeliveries } = req.query;
+
+    const include = [Supplier, ProductCategory];
+    if (!excludePurchases) include.push(PurchaseDetail);
+    if (!excludeDeliveries) include.push(DeliveryDetail);
+
     const product = await Product.findByPk(id, {
-      include: [PurchaseDetail, DeliveryDetail, Supplier],
+      include,
     });
     if (!product) throw `Can't find product with id ${id}`;
     res.json({ data: product });
