@@ -248,7 +248,9 @@ router.get("/stock-report", async (req, res, next) => {
         COALESCE(SUM("dd"."amount"), 0) as "totalOut",
         COALESCE(SUM("sa"."amount"), 0) as "totalAdjusted",
         COALESCE(SUM("lo"."amount"), 0) as "totalLoaned",
-        (COALESCE(SUM("dd"."amount"), 0) + COALESCE(SUM("sa"."amount"), 0) + COALESCE(SUM("lo"."amount"), 0)) as "stock"
+        (COALESCE(SUM("dd"."amount"), 0) + COALESCE(SUM("sa"."amount"), 0) + COALESCE(SUM("lo"."amount"), 0)) as "stock",
+        "pm"."latestStockMatchDate",
+        "pm"."latestStockMatchQty"
       FROM "DrSgItems" as "p"
       LEFT JOIN
         (
@@ -286,9 +288,22 @@ router.get("/stock-report", async (req, res, next) => {
           GROUP BY "itemId"
         ) as "lo"
         ON "lo"."itemId" = "p"."id"
+
+      LEFT JOIN
+        (
+          SELECT DISTINCT ON ("pm1"."DrSgItemId") 
+              "pm1"."DrSgItemId" AS "itemId",
+              "pm1"."date" AS "latestStockMatchDate",
+              "pm1"."qty" AS "latestStockMatchQty"
+          FROM "DrSgStockMatches" AS "pm1"
+          ORDER BY "pm1"."DrSgItemId", "pm1"."date" DESC, "pm1"."createdAt" DESC
+        ) AS "pm"
+        ON "pm"."itemId" = "p"."id"
+
       WHERE "p"."keepStockSince" is not null
       GROUP BY
-        "p"."name", "p"."id"
+        "p"."name", "p"."id",
+        "pm"."latestStockMatchDate", "pm"."latestStockMatchQty"
       ORDER BY
         "p"."name" ASC
       `
