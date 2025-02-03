@@ -524,7 +524,8 @@ sequelize
   .then(() => {
     console.log("Successfully synced database");
   })
-  .catch(() => {
+  .catch((e) => {
+    console.log(e);
     console.log("Error occured while syncing database");
   });
 

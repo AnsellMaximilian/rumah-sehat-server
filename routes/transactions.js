@@ -9,10 +9,11 @@ const {
 
 const { Op, QueryTypes } = require("sequelize");
 const moment = require("moment");
+const { TRANSACTIONS } = require("../const");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, category } = req.query;
 
     const whereClause = {};
     if (startDate) {
@@ -28,6 +29,10 @@ router.get("/", async (req, res, next) => {
       };
     }
 
+    if (category) {
+      whereClause.category = category;
+    }
+
     const transactions = await Transaction.findAll({
       include: [{ model: PurchaseInvoice, include: [Supplier] }],
       where: whereClause,
@@ -40,12 +45,13 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { date, description, amount, PurchaseInvoiceId } = req.body;
+    const { date, description, amount, PurchaseInvoiceId, category } = req.body;
     const newTransaction = Transaction.build({
       date,
       description,
       amount,
       PurchaseInvoiceId,
+      category: category ? category : TRANSACTIONS.ANSELL,
     });
     await newTransaction.save();
 

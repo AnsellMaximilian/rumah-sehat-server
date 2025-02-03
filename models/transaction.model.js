@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const moment = require("moment");
+const { TRANSACTIONS } = require("../const");
 
 module.exports = (sequelize) => {
   sequelize.define("Transaction", {
@@ -13,6 +14,10 @@ module.exports = (sequelize) => {
     amount: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    category: {
+      type: DataTypes.STRING,
+      default: TRANSACTIONS.ANSELL,
     },
     datePretty: {
       type: DataTypes.VIRTUAL,
