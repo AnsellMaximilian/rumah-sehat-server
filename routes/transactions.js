@@ -99,6 +99,28 @@ router.patch("/:id", async (req, res, next) => {
   }
 });
 
+router.get("/delivery-balance", async (req, res, next) => {
+  try {
+    const [balance] = await sequelize.query(
+      `
+       SELECT 
+        COALESCE(SUM(t.amount), 0) - COALESCE(SUM(d.cost), 0) AS balance
+      FROM "Transactions" t
+      LEFT JOIN "Deliveries" d 
+        ON d."DeliveryTypeId" IN (16, 17, 18, 19)
+        AND d."date" >= '2025-02-03'
+      WHERE t.category = 'SITI_DELIVERY'
+        AND t."date" >= '2025-02-03'
+
+      `
+    );
+
+    res.json({ data: balance[0].balance });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
