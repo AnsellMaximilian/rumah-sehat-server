@@ -46,6 +46,13 @@ const modelDefiners = [
 
   require("./dr/id/stockMatch.model"),
   require("./dr/sg/stockMatch.model"),
+
+  // Bundles
+  require("./dr/id/bundle.model"),
+  require("./dr/id/bundleItem.model"),
+
+  require("./dr/sg/bundle.model"),
+  require("./dr/sg/bundleItem.model"),
 ];
 
 const sequelize = new Sequelize(
@@ -108,6 +115,13 @@ const {
 
   DrIdStockMatch,
   DrSgStockMatch,
+
+  // BUNDLES
+  DrIdBundle,
+  DrIdBundleItem,
+
+  DrSgBundle,
+  DrSgBundleItem,
 } = sequelize.models;
 
 Region.hasMany(Customer);
@@ -514,6 +528,67 @@ DrSgItem.hasMany(DrSgStockMatch, {
 });
 
 DrSgStockMatch.belongsTo(DrSgItem, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+// BUNDLES
+DrIdItem.hasOne(DrIdBundle, {
+  onDelete: "CASCADE",
+});
+
+DrIdBundle.belongsTo(DrIdItem, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrIdBundle.hasMany(DrIdBundleItem, {
+  onDelete: "CASCADE",
+});
+
+DrIdBundleItem.belongsTo(DrIdBundle, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrIdItem.hasMany(DrIdBundleItem, {
+  onDelete: "CASCADE",
+});
+
+DrIdBundleItem.belongsTo(DrIdItem, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrSgItem.hasOne(DrSgBundle, {
+  onDelete: "CASCADE",
+});
+
+DrSgBundle.belongsTo(DrSgItem, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrSgBundle.hasMany(DrSgBundleItem, {
+  onDelete: "CASCADE",
+});
+
+DrSgBundleItem.belongsTo(DrSgBundle, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
+
+DrSgItem.hasMany(DrSgBundleItem, {
+  onDelete: "CASCADE",
+});
+
+DrSgBundleItem.belongsTo(DrSgItem, {
   foreignKey: {
     allowNull: false,
   },

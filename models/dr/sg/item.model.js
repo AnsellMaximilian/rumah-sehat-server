@@ -54,5 +54,10 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+
+    isBundle: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   });
 };
