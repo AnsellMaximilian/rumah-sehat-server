@@ -24,7 +24,16 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { parentItemId, bundleItemIds } = req.body;
+    const { parentItemId, bundleItems } = req.body;
+
+    const foundBundle = await DrIdBundle.findOne({
+      where: {
+        DrIdItemId: parentItemId,
+      },
+    });
+
+    if (foundBundle)
+      throw `Bundle for this item already exists (#${foundBundle.id})`;
 
     const transaction = await sequelize.transaction();
 
@@ -37,18 +46,20 @@ router.post("/", async (req, res, next) => {
       }
     );
 
-    const bundleItems = await Promise.all(
-      bundleItemIds.map((itemId) => {
+    const savedBundleItems = await Promise.all(
+      bundleItems.map((item) => {
         return DrIdBundleItem.create(
-          { DrIdBundleId: bundle.id, DrIdItemId: itemId },
+          { DrIdBundleId: bundle.id, DrIdItemId: item.itemId, qty: item.qty },
           { transaction }
         );
       })
     );
 
+    transaction.commit();
+
     res.json({
       message: "Success",
-      data: { ...bundle, DrIdBundleItems: bundleItems },
+      data: { ...bundle, DrIdBundleItems: savedBundleItems },
     });
   } catch (error) {
     next(error);
@@ -73,8 +84,17 @@ router.get("/:id", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { parentItemId, bundleItemIds } = req.body;
+    const { parentItemId, bundleItems } = req.body;
     const { id } = req.params;
+
+    const foundOtherBundle = await DrIdBundle.findOne({
+      where: {
+        DrIdItemId: parentItemId,
+      },
+    });
+
+    if (foundOtherBundle && parentItemId !== foundOtherBundle.DrIdItemId)
+      throw `Bundle for this item already exists (#${foundOtherBundle.id})`;
 
     const transaction = await sequelize.transaction();
 
@@ -88,10 +108,10 @@ router.patch("/:id", async (req, res, next) => {
       transaction,
     });
 
-    const bundleItems = await Promise.all(
-      bundleItemIds.map((itemId) => {
+    const updatedBundleItems = await Promise.all(
+      bundleItems.map((item) => {
         return DrIdBundleItem.create(
-          { DrIdBundleId: bundle.id, DrIdItemId: itemId },
+          { DrIdBundleId: bundle.id, DrIdItemId: item.itemId, qty: item.qty },
           { transaction }
         );
       })
@@ -99,7 +119,7 @@ router.patch("/:id", async (req, res, next) => {
 
     await transaction.commit();
 
-    res.json({ data: bundle });
+    res.json({ data: { ...bundle, DrIdBundleItems: updatedBundleItems } });
   } catch (error) {
     next(error);
   }
@@ -111,8 +131,7 @@ router.delete("/:id", async (req, res, next) => {
     const bundle = await DrIdBundle.findByPk(id, {
       include: [{ model: DrIdBundleItem, include: [DrIdItem] }],
     });
-    if (bundle.DrIdBundleItems.length > 0)
-      throw "Cannot delete. Bundle has associated items.";
+
     await bundle.destroy({
       where: {
         id: id,

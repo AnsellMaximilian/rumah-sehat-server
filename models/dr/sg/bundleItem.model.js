@@ -1,5 +1,13 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  sequelize.define("DrSgBundleItem", {});
+  sequelize.define("DrSgBundleItem", {
+    qty: {
+      type: DataTypes.DECIMAL(7, 3),
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+    },
+  });
 };
