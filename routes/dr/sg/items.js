@@ -43,8 +43,15 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name, priceSGD, points, deliveryCost, weight, keepStockSince } =
-      req.body;
+    const {
+      name,
+      priceSGD,
+      points,
+      deliveryCost,
+      weight,
+      keepStockSince,
+      isBundle,
+    } = req.body;
 
     const newItem = DrSgItem.build({
       name,
@@ -53,6 +60,7 @@ router.post("/", async (req, res, next) => {
       deliveryCost,
       weight,
       keepStockSince,
+      isBundle,
     });
     await newItem.save();
 
@@ -243,69 +251,141 @@ router.get("/stock-report", async (req, res, next) => {
     const [stock] = await sequelize.query(
       `
       SELECT 
-        "p"."name",
-        "p"."id",
-        COALESCE(SUM("dd"."amount"), 0) as "totalOut",
-        COALESCE(SUM("sa"."amount"), 0) as "totalAdjusted",
-        COALESCE(SUM("lo"."amount"), 0) as "totalLoaned",
-        (COALESCE(SUM("dd"."amount"), 0) + COALESCE(SUM("sa"."amount"), 0) + COALESCE(SUM("lo"."amount"), 0)) as "stock",
-        "pm"."latestStockMatchDate",
-        "pm"."latestStockMatchQty"
-      FROM "DrSgItems" as "p"
+          "p"."name",
+          "p"."id",
+          COALESCE(SUM("dd"."amount"), 0) AS "totalOut",
+          COALESCE(SUM("sa"."amount"), 0) AS "totalAdjusted",
+          COALESCE(SUM("lo"."amount"), 0) AS "totalLoaned",
+          COALESCE(SUM("bundleStock"."totalOut"), 0) AS "bundleTotalOut",
+          COALESCE(SUM("bundleStock"."totalAdjusted"), 0) AS "bundleTotalAdjusted",
+          COALESCE(SUM("bundleStock"."totalLoaned"), 0) AS "bundleTotalLoaned",
+          (
+            COALESCE(SUM("sa"."amount"), 0) -
+            COALESCE(SUM("dd"."amount"), 0) + 
+            
+            COALESCE(SUM("lo"."amount"), 0) + 
+            (
+              COALESCE(SUM("bundleStock"."totalAdjusted"), 0) - 
+              COALESCE(SUM("bundleStock"."totalOut"), 0) + 
+              COALESCE(SUM("bundleStock"."totalLoaned"), 0)
+            )
+          ) AS "stock",
+          "pm"."latestStockMatchDate",
+          "pm"."latestStockMatchQty"
+      FROM "DrSgItems" AS "p"
       LEFT JOIN
-        (
-          SELECT 
-            "DrSgItems"."id" as "itemId", sum("DrSgDeliveryDetails"."qty") as "amount"
-          FROM "DrSgDeliveryDetails"
-          inner join "DrSgDeliveries" on "DrSgDeliveries"."id" = "DrSgDeliveryDetails"."DrSgDeliveryId"
-          inner join "DrSgItems" on "DrSgDeliveryDetails"."DrSgItemId" = "DrSgItems"."id"
-          Where "DrSgItems"."keepStockSince" is not null and "DrSgDeliveries"."date" >= "DrSgItems"."keepStockSince"
-          group by "itemId"
-        ) as "dd"
-        ON "dd"."itemId" = "p"."id"
+          (
+              SELECT 
+                  "DrSgItems"."id" AS "itemId", SUM("DrSgDeliveryDetails"."qty") AS "amount"
+              FROM "DrSgDeliveryDetails"
+              INNER JOIN "DrSgDeliveries" ON "DrSgDeliveries"."id" = "DrSgDeliveryDetails"."DrSgDeliveryId"
+              INNER JOIN "DrSgItems" ON "DrSgDeliveryDetails"."DrSgItemId" = "DrSgItems"."id"
+              WHERE "DrSgItems"."keepStockSince" IS NOT NULL 
+                AND "DrSgDeliveries"."date" >= "DrSgItems"."keepStockSince"
+                AND "DrSgItems"."isBundle" = FALSE
+              GROUP BY "itemId"
+          ) AS "dd"
+          ON "dd"."itemId" = "p"."id"
       LEFT JOIN
-        (
-          SELECT 
-            "DrSgItems"."id" as "itemId", sum("DrSgStockAdjustments"."amount") as "amount"
-          FROM "DrSgStockAdjustments"
-          inner join "DrSgItems" on "DrSgStockAdjustments"."DrSgItemId" = "DrSgItems"."id"
-          Where "DrSgItems"."keepStockSince" is not null and "DrSgStockAdjustments"."date" >= "DrSgItems"."keepStockSince"
-          group by "itemId"
-        ) as "sa"
-        ON "sa"."itemId" = "p"."id"
+          (
+              SELECT 
+                  "DrSgItems"."id" AS "itemId", SUM("DrSgStockAdjustments"."amount") AS "amount"
+              FROM "DrSgStockAdjustments"
+              INNER JOIN "DrSgItems" ON "DrSgStockAdjustments"."DrSgItemId" = "DrSgItems"."id"
+              WHERE "DrSgItems"."keepStockSince" IS NOT NULL 
+                AND "DrSgStockAdjustments"."date" >= "DrSgItems"."keepStockSince"
+                AND "DrSgItems"."isBundle" = FALSE
+              GROUP BY "itemId"
+          ) AS "sa"
+          ON "sa"."itemId" = "p"."id"
       LEFT JOIN
-        (
-          SELECT 
-            "DrSgItems"."id" as "itemId", 
-            SUM(CASE 
-                    WHEN "DrSgLoans"."returnDate" IS NOT NULL THEN 0
-                    WHEN "DrSgLoans"."lendType" = 'lend' THEN -"DrSgLoans"."qty"
-                    ELSE "DrSgLoans"."qty"
-                END) as "amount"
-          FROM "DrSgLoans"
-          INNER JOIN "DrSgItems" on "DrSgLoans"."DrSgItemId" = "DrSgItems"."id"
-          WHERE "DrSgItems"."keepStockSince" is not null AND "DrSgLoans"."date" >= "DrSgItems"."keepStockSince"
-          GROUP BY "itemId"
-        ) as "lo"
-        ON "lo"."itemId" = "p"."id"
+          (
+              SELECT 
+                  "DrSgItems"."id" AS "itemId", 
+                  SUM(
+                      CASE 
+                          WHEN "DrSgLoans"."returnDate" IS NOT NULL THEN 0
+                          WHEN "DrSgLoans"."lendType" = 'lend' THEN -"DrSgLoans"."qty"
+                          ELSE "DrSgLoans"."qty"
+                      END
+                  ) AS "amount"
+              FROM "DrSgLoans"
+              INNER JOIN "DrSgItems" ON "DrSgLoans"."DrSgItemId" = "DrSgItems"."id"
+              WHERE "DrSgItems"."keepStockSince" IS NOT NULL 
+                AND "DrSgLoans"."date" >= "DrSgItems"."keepStockSince"
+                AND "DrSgItems"."isBundle" = FALSE
+              GROUP BY "itemId"
+          ) AS "lo"
+          ON "lo"."itemId" = "p"."id"
+      LEFT JOIN
+          (
+              SELECT DISTINCT ON ("pm1"."DrSgItemId") 
+                  "pm1"."DrSgItemId" AS "itemId",
+                  "pm1"."date" AS "latestStockMatchDate",
+                  "pm1"."qty" AS "latestStockMatchQty"
+              FROM "DrSgStockMatches" AS "pm1"
+              ORDER BY "pm1"."DrSgItemId", "pm1"."date" DESC, "pm1"."createdAt" DESC
+          ) AS "pm"
+          ON "pm"."itemId" = "p"."id"
+      LEFT JOIN 
+          (
+              SELECT 
+                  "bi"."DrSgItemId" AS "itemId", 
+                  SUM("dd"."amount" * "bi"."qty") AS "totalOut",
+                  SUM("sa"."amount" * "bi"."qty") AS "totalAdjusted",
+                  SUM("lo"."amount" * "bi"."qty") AS "totalLoaned"
+				
+              FROM "DrSgBundleItems" AS "bi"
+              INNER JOIN "DrSgBundles" AS "b" ON "b"."id" = "bi"."DrSgBundleId"
+              INNER JOIN "DrSgItems" AS "parentItem" ON "b"."DrSgItemId" = "parentItem"."id" 
+              INNER JOIN "DrSgItems" AS "i" ON "i"."id" = "bi"."DrSgItemId" 
+              LEFT JOIN
+                  (
+                      SELECT 
+                          "DrSgItems"."id" AS "itemId", SUM("DrSgDeliveryDetails"."qty") AS "amount", "DrSgDeliveries"."date" as "date"
+                      FROM "DrSgDeliveryDetails"
+                      INNER JOIN "DrSgDeliveries" ON "DrSgDeliveries"."id" = "DrSgDeliveryDetails"."DrSgDeliveryId"
+                      INNER JOIN "DrSgItems" ON "DrSgDeliveryDetails"."DrSgItemId" = "DrSgItems"."id"
+                      GROUP BY "itemId", "date"
+                  ) AS "dd"
+              ON "dd"."itemId" = "parentItem"."id"  and "dd"."date" >= "i"."keepStockSince"
+              LEFT JOIN
+                  (
+                      SELECT 
+                          "DrSgItems"."id" AS "itemId", SUM("DrSgStockAdjustments"."amount") AS "amount", "DrSgStockAdjustments"."date" as "date"
+                      FROM "DrSgStockAdjustments"
+                      INNER JOIN "DrSgItems" ON "DrSgStockAdjustments"."DrSgItemId" = "DrSgItems"."id"
+                      GROUP BY "itemId", "date"
+                  ) AS "sa"
+              ON "sa"."itemId" = "parentItem"."id" and "sa"."date" >= "i"."keepStockSince"
+              LEFT JOIN
+                  (
+                      SELECT 
+                          "DrSgItems"."id" AS "itemId", "DrSgLoans"."date" as "date",
+                          SUM(
+                              CASE 
+                                  WHEN "DrSgLoans"."returnDate" IS NOT NULL THEN 0
+                                  WHEN "DrSgLoans"."lendType" = 'lend' THEN -"DrSgLoans"."qty"
+                                  ELSE "DrSgLoans"."qty"
+                              END
+                          ) AS "amount"
+                      FROM "DrSgLoans"
+                      INNER JOIN "DrSgItems" ON "DrSgLoans"."DrSgItemId" = "DrSgItems"."id"
+                      GROUP BY "itemId", "date"
+                  ) AS "lo"
+              ON "lo"."itemId" = "parentItem"."id" and "lo"."date" >= "i"."keepStockSince"
+              WHERE "i"."keepStockSince" IS NOT NULL 
+              GROUP BY "bi"."DrSgItemId"
+          ) AS "bundleStock"
+      ON "bundleStock"."itemId" = "p"."id"
 
-      LEFT JOIN
-        (
-          SELECT DISTINCT ON ("pm1"."DrSgItemId") 
-              "pm1"."DrSgItemId" AS "itemId",
-              "pm1"."date" AS "latestStockMatchDate",
-              "pm1"."qty" AS "latestStockMatchQty"
-          FROM "DrSgStockMatches" AS "pm1"
-          ORDER BY "pm1"."DrSgItemId", "pm1"."date" DESC, "pm1"."createdAt" DESC
-        ) AS "pm"
-        ON "pm"."itemId" = "p"."id"
-
-      WHERE "p"."keepStockSince" is not null
+      WHERE "p"."keepStockSince" IS NOT NULL
+      AND "p"."isBundle" = FALSE  
       GROUP BY
-        "p"."name", "p"."id",
-        "pm"."latestStockMatchDate", "pm"."latestStockMatchQty"
+          "p"."name", "p"."id",
+          "pm"."latestStockMatchDate", "pm"."latestStockMatchQty"
       ORDER BY
-        "p"."name" ASC
+          "p"."name" ASC;
       `
     );
     res.json({ data: stock });
@@ -340,14 +420,29 @@ router.patch("/:id/cycle-active-status", async (req, res, next) => {
 
 router.patch("/:id", async (req, res, next) => {
   try {
-    const { name, priceSGD, points, deliveryCost, weight, keepStockSince } =
-      req.body;
+    const {
+      name,
+      priceSGD,
+      points,
+      deliveryCost,
+      weight,
+      keepStockSince,
+      isBundle,
+    } = req.body;
     const { id } = req.params;
 
     const item = await DrSgItem.findByPk(id);
 
     await item.update(
-      { name, priceSGD, points, deliveryCost, weight, keepStockSince },
+      {
+        name,
+        priceSGD,
+        points,
+        deliveryCost,
+        weight,
+        keepStockSince,
+        isBundle,
+      },
       {
         where: {
           id: id,
