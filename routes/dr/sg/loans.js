@@ -3,7 +3,7 @@ const { Op } = require("sequelize");
 const { makeError } = require("../../../helpers/errors");
 const {
   sequelize: {
-    models: { DrSgItem, Customer, DrSgLoan },
+    models: { DrSgItem, Customer, DrSgLoan, DrSgBundle, DrSgBundleItem },
   },
 } = require("../../../models/index");
 
@@ -47,6 +47,41 @@ router.post("/", async (req, res, next) => {
     await newLoan.save();
 
     res.json({ message: "Success", data: newLoan });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/bundle", async (req, res, next) => {
+  try {
+    const { CustomerId, DrSgItemId, lendType } = req.query;
+    const whereClause = {};
+    if (CustomerId) {
+      whereClause.CustomerId = CustomerId;
+    }
+
+    if (lendType) {
+      whereClause.lendType = lendType;
+    }
+
+    const bundleItemWhereClause = {};
+
+    if (DrSgItemId) bundleItemWhereClause.DrSgItemId = DrSgItemId;
+
+    const bundleItems = await DrSgBundleItem.findAll({
+      where: bundleItemWhereClause,
+      include: [DrSgBundle, DrSgItem],
+    });
+
+    const loans = await DrSgLoan.findAll({
+      where: {
+        DrSgItemId: {
+          [Op.in]: bundleItems.map((bi) => bi.DrSgBundle.DrSgItemId),
+        },
+      },
+      include: [Customer, DrSgItem],
+    });
+    res.json({ data: loans });
   } catch (error) {
     next(error);
   }

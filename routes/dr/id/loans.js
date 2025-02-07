@@ -9,6 +9,8 @@ const {
       DrIdStockAdjustment,
       DrIdDelivery,
       Customer,
+      DrIdBundle,
+      DrIdBundleItem,
       DrIdLoan,
     },
   },
@@ -54,6 +56,41 @@ router.post("/", async (req, res, next) => {
     await newLoan.save();
 
     res.json({ message: "Success", data: newLoan });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/bundle", async (req, res, next) => {
+  try {
+    const { CustomerId, DrIdItemId, lendType } = req.query;
+    const whereClause = {};
+    if (CustomerId) {
+      whereClause.CustomerId = CustomerId;
+    }
+
+    if (lendType) {
+      whereClause.lendType = lendType;
+    }
+
+    const bundleItemWhereClause = {};
+
+    if (DrIdItemId) bundleItemWhereClause.DrIdItemId = DrIdItemId;
+
+    const bundleItems = await DrIdBundleItem.findAll({
+      where: bundleItemWhereClause,
+      include: [DrIdBundle, DrIdItem],
+    });
+
+    const loans = await DrIdLoan.findAll({
+      where: {
+        DrIdItemId: {
+          [Op.in]: bundleItems.map((bi) => bi.DrIdBundle.DrIdItemId),
+        },
+      },
+      include: [Customer, DrIdItem],
+    });
+    res.json({ data: loans });
   } catch (error) {
     next(error);
   }
