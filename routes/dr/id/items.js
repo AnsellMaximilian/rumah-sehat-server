@@ -11,6 +11,8 @@ const {
       Customer,
       DrIdLoan,
       DrIdStockMatch,
+      DrIdBundle,
+      DrIdBundleItem,
     },
   },
   sequelize,
@@ -109,6 +111,8 @@ router.get("/:id/stock", async (req, res, next) => {
     const item = await DrIdItem.findByPk(id, {
       include: [DrIdDeliveryDetail],
     });
+
+    console.log(await getBundleStock(item));
     if (!item) throw `Can't find item with id ${id}`;
     if (item.keepStockSince !== null) {
       const outgoing = await DrIdDelivery.findAll({
@@ -163,7 +167,9 @@ router.get("/:id/stock", async (req, res, next) => {
         0
       );
 
-      stock = -outgoingNumber + adjustmentNumber + loanNumber;
+      const bundleStock = await getBundleStock(item);
+
+      stock = -outgoingNumber + adjustmentNumber + loanNumber + bundleStock;
     }
 
     res.json({ data: stock });
@@ -453,5 +459,71 @@ router.delete("/:id", async (req, res, next) => {
     next(error);
   }
 });
+
+// item: DrIdItem
+async function getBundleStock(item) {
+  if (!item.keepStockSince) return 0;
+
+  const [res] = await sequelize.query(
+    `
+    SELECT 
+        "bi"."DrIdItemId" AS "itemId", 
+        SUM("dd"."amount" * "bi"."qty") AS "totalOut",
+        SUM("sa"."amount" * "bi"."qty") AS "totalAdjusted",
+        SUM("lo"."amount" * "bi"."qty") AS "totalLoaned"
+
+    FROM "DrIdBundleItems" AS "bi"
+    INNER JOIN "DrIdBundles" AS "b" ON "b"."id" = "bi"."DrIdBundleId"
+    INNER JOIN "DrIdItems" AS "parentItem" ON "b"."DrIdItemId" = "parentItem"."id" 
+    INNER JOIN "DrIdItems" AS "i" ON "i"."id" = "bi"."DrIdItemId" 
+    LEFT JOIN
+        (
+            SELECT 
+                "DrIdItems"."id" AS "itemId", SUM("DrIdDeliveryDetails"."qty") AS "amount", "DrIdDeliveries"."date" as "date"
+            FROM "DrIdDeliveryDetails"
+            INNER JOIN "DrIdDeliveries" ON "DrIdDeliveries"."id" = "DrIdDeliveryDetails"."DrIdDeliveryId"
+            INNER JOIN "DrIdItems" ON "DrIdDeliveryDetails"."DrIdItemId" = "DrIdItems"."id"
+            GROUP BY "itemId", "date"
+        ) AS "dd"
+    ON "dd"."itemId" = "parentItem"."id"  and "dd"."date" >= "i"."keepStockSince"
+    LEFT JOIN
+        (
+            SELECT 
+                "DrIdItems"."id" AS "itemId", SUM("DrIdStockAdjustments"."amount") AS "amount", "DrIdStockAdjustments"."date" as "date"
+            FROM "DrIdStockAdjustments"
+            INNER JOIN "DrIdItems" ON "DrIdStockAdjustments"."DrIdItemId" = "DrIdItems"."id"
+            GROUP BY "itemId", "date"
+        ) AS "sa"
+    ON "sa"."itemId" = "parentItem"."id" and "sa"."date" >= "i"."keepStockSince"
+    LEFT JOIN
+        (
+            SELECT 
+                "DrIdItems"."id" AS "itemId", "DrIdLoans"."date" as "date",
+                SUM(
+                    CASE 
+                        WHEN "DrIdLoans"."returnDate" IS NOT NULL THEN 0
+                        WHEN "DrIdLoans"."lendType" = 'lend' THEN -"DrIdLoans"."qty"
+                        ELSE "DrIdLoans"."qty"
+                    END
+                ) AS "amount"
+            FROM "DrIdLoans"
+            INNER JOIN "DrIdItems" ON "DrIdLoans"."DrIdItemId" = "DrIdItems"."id"
+            GROUP BY "itemId", "date"
+        ) AS "lo"
+    ON "lo"."itemId" = "parentItem"."id" and "lo"."date" >= "i"."keepStockSince"
+    WHERE "i"."keepStockSince" IS NOT NULL AND "i"."id" = ${item.id}
+    GROUP BY "bi"."DrIdItemId"`
+  );
+
+  const bundleStock = res[0];
+
+  if (!bundleStock) return 0;
+
+  return (
+    parseFloat(bundleStock.totalAdjusted) +
+    parseFloat(bundleStock.totalLoaned) -
+    parseFloat(bundleStock.totalOut)
+  );
+}
 
 module.exports = router;
