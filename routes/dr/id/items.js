@@ -200,12 +200,15 @@ router.get("/:id/stock-matches", async (req, res, next) => {
 router.get("/:id/history", async (req, res, next) => {
   try {
     const { id } = req.params;
-    let stock = 0;
     const item = await DrIdItem.findByPk(id, {
-      // include: [PurchaseDetail, DeliveryDetail, Draw],
+      include: [{ model: DrIdBundleItem, include: [DrIdBundle] }],
     });
     if (!item) throw `Can't find item with id ${id}`;
     if (item.keepStockSince !== null) {
+      const bundleItemIds = item.DrIdBundleItems.map(
+        (bi) => bi.DrIdBundle.DrIdItemId
+      );
+
       const deliveryDetails = await DrIdDeliveryDetail.findAll({
         where: {
           DrIdItemId: item.id,
@@ -239,8 +242,60 @@ router.get("/:id/history", async (req, res, next) => {
           DrIdItemId: item.id,
         },
       });
+
+      // BUNDLE
+      const bundleDeliveryDetails = await DrIdDeliveryDetail.findAll({
+        where: {
+          DrIdItemId: {
+            [Op.in]: bundleItemIds,
+          },
+        },
+        include: [
+          { model: DrIdItem },
+          {
+            model: DrIdDelivery,
+            include: Customer,
+            where: {
+              date: {
+                [Op.gte]: item.keepStockSince,
+              },
+            },
+          },
+        ],
+      });
+
+      const bundleAdjustments = await DrIdStockAdjustment.findAll({
+        include: [DrIdItem],
+        where: {
+          date: {
+            [Op.gte]: item.keepStockSince,
+          },
+          DrIdItemId: {
+            [Op.in]: bundleItemIds,
+          },
+        },
+      });
+      const bundleLoans = await DrIdLoan.findAll({
+        include: [DrIdItem],
+        where: {
+          date: {
+            [Op.gte]: item.keepStockSince,
+          },
+          DrIdItemId: {
+            [Op.in]: bundleItemIds,
+          },
+        },
+      });
+
       return res.json({
-        data: { deliveryDetails, adjustments, loans },
+        data: {
+          deliveryDetails,
+          adjustments,
+          loans,
+          bundleAdjustments,
+          bundleDeliveryDetails,
+          bundleLoans,
+        },
       });
     }
   } catch (error) {
