@@ -112,7 +112,6 @@ router.get("/:id/stock", async (req, res, next) => {
       include: [DrIdDeliveryDetail],
     });
 
-    console.log(await getBundleStock(item));
     if (!item) throw `Can't find item with id ${id}`;
     if (item.keepStockSince !== null) {
       const outgoing = await DrIdDelivery.findAll({
@@ -388,9 +387,9 @@ router.get("/stock-report", async (req, res, next) => {
           (
               SELECT 
                   "bi"."DrIdItemId" AS "itemId", 
-                  SUM("dd"."amount" * "bi"."qty") AS "totalOut",
-                  SUM("sa"."amount" * "bi"."qty") AS "totalAdjusted",
-                  SUM("lo"."amount" * "bi"."qty") AS "totalLoaned"
+                  COALESCE(SUM("dd"."amount" * "bi"."qty"), 0) AS "totalOut",
+                  COALESCE(SUM("sa"."amount" * "bi"."qty"), 0) AS "totalAdjusted",
+                  COALESCE(SUM("lo"."amount" * "bi"."qty"), 0) AS "totalLoaned"
 				
               FROM "DrIdBundleItems" AS "bi"
               INNER JOIN "DrIdBundles" AS "b" ON "b"."id" = "bi"."DrIdBundleId"
@@ -523,9 +522,9 @@ async function getBundleStock(item) {
     `
     SELECT 
         "bi"."DrIdItemId" AS "itemId", 
-        SUM("dd"."amount" * "bi"."qty") AS "totalOut",
-        SUM("sa"."amount" * "bi"."qty") AS "totalAdjusted",
-        SUM("lo"."amount" * "bi"."qty") AS "totalLoaned"
+        COALESCE(SUM("dd"."amount" * "bi"."qty"), 0) AS "totalOut",
+        COALESCE(SUM("sa"."amount" * "bi"."qty"), 0) AS "totalAdjusted",
+        COALESCE(SUM("lo"."amount" * "bi"."qty"), 0) AS "totalLoaned"
 
     FROM "DrIdBundleItems" AS "bi"
     INNER JOIN "DrIdBundles" AS "b" ON "b"."id" = "bi"."DrIdBundleId"

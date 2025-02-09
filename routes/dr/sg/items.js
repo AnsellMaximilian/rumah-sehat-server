@@ -390,9 +390,9 @@ router.get("/stock-report", async (req, res, next) => {
           (
               SELECT 
                   "bi"."DrSgItemId" AS "itemId", 
-                  SUM("dd"."amount" * "bi"."qty") AS "totalOut",
-                  SUM("sa"."amount" * "bi"."qty") AS "totalAdjusted",
-                  SUM("lo"."amount" * "bi"."qty") AS "totalLoaned"
+                  COALESCE(SUM("dd"."amount" * "bi"."qty"), 0) AS "totalOut",
+                  COALESCE(SUM("sa"."amount" * "bi"."qty"), 0) AS "totalAdjusted",
+                  COALESCE(SUM("lo"."amount" * "bi"."qty"), 0) AS "totalLoaned"
 				
               FROM "DrSgBundleItems" AS "bi"
               INNER JOIN "DrSgBundles" AS "b" ON "b"."id" = "bi"."DrSgBundleId"
@@ -540,9 +540,9 @@ async function getBundleStock(item) {
     `
     SELECT 
         "bi"."DrSgItemId" AS "itemId", 
-        SUM("dd"."amount" * "bi"."qty") AS "totalOut",
-        SUM("sa"."amount" * "bi"."qty") AS "totalAdjusted",
-        SUM("lo"."amount" * "bi"."qty") AS "totalLoaned"
+        COALESCE(SUM("dd"."amount" * "bi"."qty"), 0) AS "totalOut",
+        COALESCE(SUM("sa"."amount" * "bi"."qty"), 0) AS "totalAdjusted",
+        COALESCE(SUM("lo"."amount" * "bi"."qty"), 0) AS "totalLoaned"
     FROM "DrSgBundleItems" AS "bi"
     INNER JOIN "DrSgBundles" AS "b" ON "b"."id" = "bi"."DrSgBundleId"
     INNER JOIN "DrSgItems" AS "parentItem" ON "b"."DrSgItemId" = "parentItem"."id" 
