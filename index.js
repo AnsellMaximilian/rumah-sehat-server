@@ -28,6 +28,7 @@ app.use("/transactions", require("./routes/transactions"));
 app.use("/dr", require("./routes/dr"));
 app.use("/rs", require("./routes/rs"));
 app.use("/info", require("./routes/info"));
+app.use("/notes", require("./routes/notes"));
 
 // error handler
 app.use(function (err, req, res, next) {
