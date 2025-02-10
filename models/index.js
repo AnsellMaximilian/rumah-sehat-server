@@ -55,6 +55,8 @@ const modelDefiners = [
   require("./dr/sg/bundleItem.model"),
 
   require("./note.model"),
+
+  require("./todo.model"),
 ];
 
 const sequelize = new Sequelize(
@@ -126,6 +128,7 @@ const {
   DrSgBundleItem,
 
   Note,
+  Todo,
 } = sequelize.models;
 
 Region.hasMany(Customer);
