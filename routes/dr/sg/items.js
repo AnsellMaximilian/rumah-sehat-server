@@ -19,7 +19,7 @@ const {
 
 router.get("/", async (req, res, next) => {
   try {
-    const { name, activeStatus } = req.query;
+    const { name, activeStatus, isBundle } = req.query;
 
     const whereClause = {};
 
@@ -33,6 +33,8 @@ router.get("/", async (req, res, next) => {
       whereClause.isActive = true;
     } else if (activeStatus !== "all")
       whereClause.isActive = activeStatus === "active";
+
+    if (isBundle) whereClause.isBundle = isBundle === "true";
 
     const items = await DrSgItem.findAll({
       where: whereClause,
