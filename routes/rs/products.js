@@ -61,16 +61,20 @@ router.get("/", async (req, res, next) => {
 
 router.get("/print", async (req, res, next) => {
   try {
-    const { SupplierId, exclude, includeCost } = req.query;
+    const { SupplierId, exclude, includeCost, includeInactive } = req.query;
 
-    const whereClause = {};
+    const whereClause = {
+      isActive: true,
+    };
     let printTitle = "Product List";
     let supplier;
     if (SupplierId) {
-      whereClause.SupplierId = SupplierId;
-      printTitle = "Cisarua Product List";
       supplier = await Supplier.findByPk(SupplierId);
+      whereClause.SupplierId = SupplierId;
+      printTitle = `${supplier.name} Product List`;
     }
+
+    if (includeInactive) whereClause.isActive = undefined;
 
     const products = await Product.findAll({
       include: [ProductCategory, Supplier],
