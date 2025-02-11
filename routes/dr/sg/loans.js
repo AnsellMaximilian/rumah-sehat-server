@@ -52,6 +52,29 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.post("/bulk", async (req, res, next) => {
+  try {
+    const { loanItems } = req.body;
+    const newLoans = await DrSgLoan.bulkCreate(
+      loanItems.map((loan) => {
+        const { date, qty, lendType, note, CustomerId, DrSgItemId } = loan;
+        return {
+          date,
+          qty,
+          lendType,
+          note,
+          isReturned: false,
+          CustomerId,
+          DrSgItemId,
+        };
+      })
+    );
+    res.json({ message: "Success", data: newLoans });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/bundle", async (req, res, next) => {
   try {
     const { CustomerId, DrSgItemId, lendType } = req.query;
