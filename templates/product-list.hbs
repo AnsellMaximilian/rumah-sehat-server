@@ -34,6 +34,9 @@
             <thead>
               <tr>
                 <th>Product</th>
+                {{#if includeUnit}}
+                <th>Unit</th>
+                {{/if}}
                 {{#if includeCost}}
                 <th>Cost</th>
                 {{/if}}
@@ -45,6 +48,9 @@
 
               <tr>
                 <td>{{ this.name }}</td>
+                {{#if ../includeUnit}}
+                <td>{{ this.unit }}</td>
+                {{/if}}
                 {{#if ../includeCost}}
                 <td>{{formatRP this.cost}}</td>
                 {{/if}}

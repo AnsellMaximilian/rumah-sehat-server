@@ -61,7 +61,8 @@ router.get("/", async (req, res, next) => {
 
 router.get("/print", async (req, res, next) => {
   try {
-    const { SupplierId, exclude, includeCost, includeInactive } = req.query;
+    const { SupplierId, exclude, includeCost, includeInactive, includeUnit } =
+      req.query;
 
     const whereClause = {
       isActive: true,
@@ -89,6 +90,7 @@ router.get("/print", async (req, res, next) => {
       products: products.map((product) => product.toJSON()),
       supplier: supplier ? supplier.toJSON() : null,
       includeCost: !!includeCost,
+      includeUnit: !!includeUnit,
       datePrinted: moment().format("DD MMMM YYYY"),
     };
 
