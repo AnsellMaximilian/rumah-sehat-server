@@ -74,6 +74,26 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.post("/bulk-adjust-stock", async (req, res, next) => {
+  try {
+    const { adjustmentItems } = req.body;
+    const newAdjustments = await DrSgStockAdjustment.bulkCreate(
+      adjustmentItems.map((adjustment) => {
+        const { amount, date, description, DrSgItemId } = adjustment;
+        return {
+          amount,
+          date,
+          DrSgItemId,
+          description,
+        };
+      })
+    );
+    res.json({ message: "Success", data: newAdjustments });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post("/:id/adjust-stock", async (req, res, next) => {
   try {
     const { amount, date, description } = req.body;
