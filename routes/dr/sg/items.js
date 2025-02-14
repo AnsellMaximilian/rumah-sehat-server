@@ -206,6 +206,11 @@ router.get("/:id/stock", async (req, res, next) => {
 router.get("/:id/stock-matches", async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { limit } = req.query;
+    if (limit && isNaN(limit)) {
+      throw `Limit must be a number.`;
+    }
+
     const matches = await DrSgStockMatch.findAll({
       where: {
         DrSgItemId: id,
@@ -214,6 +219,7 @@ router.get("/:id/stock-matches", async (req, res, next) => {
         ["date", "DESC"],
         ["createdAt", "DESC"],
       ],
+      limit: limit ? parseInt(limit, 10) : undefined,
     });
     res.json({ data: matches });
   } catch (error) {
