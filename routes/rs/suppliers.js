@@ -58,21 +58,7 @@ router.get("/:id", async (req, res, next) => {
     const supplier = await Supplier.findByPk(id, {
       include: [PurchaseAdjustment],
     });
-    const details = await PurchaseDetail.findAll({
-      include: [
-        {
-          model: Purchase,
-          include: [
-            {
-              model: PurchaseInvoice,
-              where: {
-                SupplierId: supplier.id,
-              },
-            },
-          ],
-        },
-      ],
-    });
+
     if (!supplier) throw `Can't find supplier with id ${id}`;
     res.json({ data: supplier });
   } catch (error) {
