@@ -111,7 +111,7 @@ router.get("/delivery-balance", async (req, res, next) => {
       - 
       COALESCE((SELECT SUM(d.cost) 
                 FROM "Deliveries" d 
-                WHERE d."DeliveryTypeId" IN (16, 17, 18, 19) 
+                WHERE d."DeliveryTypeId" IN (16, 17, 18, 19, 20) 
                 AND d."date" >= '2025-02-03'), 0)
       ) AS balance;
 
