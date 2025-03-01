@@ -106,6 +106,27 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+router.delete("/done", async (req, res, next) => {
+  try {
+    const todos = await Todo.findAll({
+      where: {
+        isDone: true,
+      },
+      attributes: ["id"],
+    });
+
+    const deletedIds = todos.map((todo) => todo.id);
+
+    await Todo.destroy({
+      where: { isDone: true },
+    });
+
+    res.json({ data: deletedIds });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
