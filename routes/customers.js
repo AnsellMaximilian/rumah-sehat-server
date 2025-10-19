@@ -127,6 +127,8 @@ router.post("/", async (req, res, next) => {
       RegionId,
       receiveDrDiscount,
       note,
+      accountName,
+      accountNumber,
     } = req.body;
 
     const newCustomer = Customer.build({
@@ -137,6 +139,8 @@ router.post("/", async (req, res, next) => {
       RegionId,
       note,
       receiveDrDiscount,
+      accountName,
+      accountNumber,
     });
     await newCustomer.save();
 
@@ -279,13 +283,25 @@ router.patch("/:id", async (req, res) => {
       RegionId,
       receiveDrDiscount,
       note,
+      accountName,
+      accountNumber,
     } = req.body;
     const { id } = req.params;
 
     const customer = await Customer.findByPk(id);
 
     await customer.update(
-      { fullName, address, phone, rsMember, RegionId, receiveDrDiscount, note },
+      {
+        fullName,
+        address,
+        phone,
+        rsMember,
+        RegionId,
+        receiveDrDiscount,
+        note,
+        accountName,
+        accountNumber,
+      },
       {
         where: {
           id: id,
