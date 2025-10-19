@@ -553,6 +553,72 @@ router.get("/products", async (req, res, next) => {
   }
 });
 
+// Products report filtered by Supplier
+router.get("/products-by-supplier", async (req, res, next) => {
+  try {
+    const { startDate, endDate, supplierId } = req.query;
+
+    const [products] = await sequelize.query(
+      `
+        SELECT
+                "D"."date" as "deliveryDate",
+                "DD"."id",
+                "C"."fullName" as "customerName",
+                "P"."name" as "product",
+                "DD"."price",
+                "DD"."cost",
+                "P"."SupplierId" as "supplierId",
+                "P"."id" as "productId",
+                "S"."name" as "supplierName",
+                SUM("DD"."price" * "DD"."qty") as "totalPrice",
+                SUM("DD"."qty") as "totalQty",
+                SUM("DD"."cost" * "DD"."qty") as "totalCost",
+                SUM(("DD"."price" * "DD"."qty") - ("DD"."cost" * "DD"."qty")) as "profit",
+                "D"."date" as "saleDate",
+                "D"."id" as "DeliveryId",
+                "I"."id" as "InvoiceId"
+            FROM "Invoices" as "I"
+        INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
+        INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
+        INNER JOIN "Products" as "P" ON "DD"."ProductId" = "P"."id"
+        INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
+        INNER JOIN "Customers" AS "C" ON "I"."CustomerId" = "C"."id"
+            AND "D"."date" >= '${startDate}'
+            AND "D"."date" <= '${endDate}'
+            AND "P"."SupplierId" = ${supplierId}
+        GROUP BY "product", "DD"."price", "DD"."cost", "supplierId", "S"."name", "productId", "customerName", "deliveryDate", "DD"."id", "D"."id", "I"."id"
+
+        `
+    );
+
+    const [totals] = await sequelize.query(
+      `
+        SELECT
+                "S"."name" as "supplierName",
+                "S"."id" as "supplierId",
+                SUM("DD"."price" * "DD"."qty") as "totalPrice",
+                SUM("DD"."qty") as "totalQty",
+                SUM("DD"."cost" * "DD"."qty") as "totalCost",
+                SUM(("DD"."price" * "DD"."qty") - ("DD"."cost" * "DD"."qty")) as "profit"
+            FROM "Invoices" as "I"
+        INNER JOIN "Deliveries" as "D" ON "I"."id" = "D"."InvoiceId"
+        INNER JOIN "DeliveryDetails" as "DD" on "D"."id" = "DD"."DeliveryId"
+        INNER JOIN "Products" as "P" ON "DD"."ProductId" = "P"."id"
+        INNER JOIN "Suppliers" AS "S" ON "P"."SupplierId" = "S"."id"
+            AND "D"."date" >= '${startDate}'
+            AND "D"."date" <= '${endDate}'
+            AND "P"."SupplierId" = ${supplierId}
+        GROUP BY "supplierName", "supplierId"
+
+        `
+    );
+
+    res.json({ data: { products, totals } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/full-report", async (req, res, next) => {
   try {
     let { startDate, endDate } = req.query;
