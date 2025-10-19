@@ -186,6 +186,28 @@ router.post("/:id/adjustments", async (req, res, next) => {
   }
 });
 
+// Delete a collection (leave invoices intact, detach association)
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const collection = await DrInvoiceCollection.findByPk(id, {
+      include: [{ model: DrInvoice }],
+    });
+    if (!collection) throw `Can't find collection with id ${id}`;
+
+    // Detach invoices by nulling the foreign key
+    await DrInvoice.update(
+      { DrInvoiceCollectionId: null },
+      { where: { DrInvoiceCollectionId: id } }
+    );
+
+    await collection.destroy();
+    res.json({ data: { id } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Delete adjustment
 router.delete("/adjustments/:adjustmentId", async (req, res, next) => {
   try {
