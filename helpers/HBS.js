@@ -52,6 +52,13 @@ const productListStylePartial = HBS.compile(
   )
 );
 
+const drInvoiceBodyPartial = HBS.compile(
+  fs.readFileSync(
+    path.join(__dirname, "..", "templates", "partials", "dr-invoice-body.hbs"),
+    "utf-8"
+  )
+);
+
 HBS.registerPartial("separator", separatorPartial);
 HBS.registerPartial("reportStyle", reportStylePartial);
 HBS.registerPartial("fullReportStyle", fullReportStylePartial);
@@ -59,6 +66,7 @@ HBS.registerPartial("pettyCashStyle", pettyCashStylePartial);
 HBS.registerPartial("invoiceStyle", invoiceStylePartial);
 HBS.registerPartial("productListStyle", productListStylePartial);
 HBS.registerPartial("reset", resetPartial);
+HBS.registerPartial("dr-invoice-body", drInvoiceBodyPartial);
 
 // HELPERS
 HBS.registerHelper("formatRP", function (num) {

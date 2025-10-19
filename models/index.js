@@ -30,6 +30,8 @@ const modelDefiners = [
   // DR's Secret
   require("./dr/discountModel.model"),
   require("./dr/invoice.model"),
+  require("./dr/invoiceCollection.model"),
+  require("./dr/invoiceCollectionAdjustment.model"),
   require("./dr/id/delivery.model"),
   require("./dr/sg/delivery.model"),
   require("./dr/my/delivery.model"),
@@ -112,6 +114,8 @@ const {
   DrSgDeliveryDetail,
   DrMyDeliveryDetail,
   DrInvoice,
+  DrInvoiceCollection,
+  DrInvoiceCollectionAdjustment,
   DrIdStockAdjustment,
   DrIdLoan,
   DrSgStockAdjustment,
@@ -403,6 +407,27 @@ DrMyDelivery.hasMany(DrMyDeliveryDetail, {
 DrIdDelivery.belongsTo(DrInvoice);
 DrSgDelivery.belongsTo(DrInvoice);
 DrMyDelivery.belongsTo(DrInvoice);
+
+// DR Invoice Collections
+DrInvoiceCollection.hasMany(DrInvoice, {
+  onDelete: "SET NULL",
+});
+
+DrInvoice.belongsTo(DrInvoiceCollection, {
+  foreignKey: {
+    allowNull: true,
+  },
+});
+
+DrInvoiceCollection.hasMany(DrInvoiceCollectionAdjustment, {
+  onDelete: "CASCADE",
+});
+
+DrInvoiceCollectionAdjustment.belongsTo(DrInvoiceCollection, {
+  foreignKey: {
+    allowNull: false,
+  },
+});
 
 // Stock Adjustments
 DrIdItem.hasMany(DrIdStockAdjustment, {
