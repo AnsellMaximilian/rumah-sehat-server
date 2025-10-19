@@ -9,13 +9,19 @@
       #summary header h1 { margin: 0; }
       #summary table { width: 100%; border-collapse: collapse; }
       #summary th, #summary td { border-bottom: 1px solid #ddd; padding: 6px; text-align: left; }
+      #summary thead th { font-weight: 700; }
+      #summary tbody td:first-child { font-weight: 700; }
       #summary tfoot td { font-weight: bold; }
       #adjustments__items { display: grid; grid-row-gap: 6px; margin-top: 8px; }
       .adjustments__items__item { display: grid; grid-template-columns: 80px 1fr 160px; }
       .right { text-align: right; }
+      /* Make summary amount due larger and centered compared to normal */
+      #summary #grand-total { width: 80%; margin: 2rem auto 0; text-align: center; }
+      #summary #grand-total > *:first-child { font-size: 2rem; }
+      #summary #grand-total > *:last-child { font-size: 3rem; }
     </style>
   </head>
-  <body>
+  <body id="dr-body">
     <main>
       <section id="summary">
         <header id="header">
@@ -100,4 +106,3 @@
     </main>
   </body>
 </html>
-
