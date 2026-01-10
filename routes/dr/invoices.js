@@ -23,6 +23,23 @@ const {
 const { createPDFStream, savePDF } = require("../../helpers/pdfGeneration");
 const { Op } = require("sequelize");
 
+const logoPath = path.join(
+  __dirname,
+  "..",
+  "..",
+  "assets",
+  "images",
+  "chi-drs-logo.png"
+);
+
+let logoSrc = null;
+try {
+  const logoBuffer = fs.readFileSync(logoPath);
+  logoSrc = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+} catch (e) {
+  console.warn("Logo not found or unreadable at", logoPath);
+}
+
 router.get("/", async (req, res) => {
   try {
     const {
@@ -244,6 +261,7 @@ router.post("/bulk-print", async (req, res, next) => {
               hasSgDeliveries: invoiceJSON.DrSgDeliveries.length > 0,
               hasMyDeliveries: invoiceJSON.DrMyDeliveries.length > 0,
             },
+            logoSrc,
           },
           path.join(
             directoryPath,
@@ -376,6 +394,7 @@ router.get("/:id/print", async (req, res, next) => {
           hasSgDeliveries: invoiceJSON.DrSgDeliveries.length > 0,
           hasMyDeliveries: invoiceJSON.DrMyDeliveries.length > 0,
         },
+        logoSrc,
       }
     );
 
